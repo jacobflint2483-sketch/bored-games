@@ -1,0 +1,531 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slope</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#050812;color:white;font-family:Arial,sans-serif;overflow:hidden;touch-action:none}
+canvas{display:block;width:100vw;height:100vh}
+#hud{position:absolute;top:15px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 22px;pointer-events:none}
+.stat{background:#07121dcc;border:1px solid #00eaff66;padding:10px 16px;border-radius:10px;font-weight:bold;text-shadow:0 0 10px #00eaff}
+#menu{position:absolute;inset:0;background:#030713bb;display:flex;align-items:center;justify-content:center;text-align:center}
+.panel{width:min(90%,420px);background:#091525ee;border:1px solid #00eaff88;border-radius:20px;padding:30px;box-shadow:0 0 35px #00d9ff33}
+h1{font-size:58px;margin:0 0 8px;color:#00f0ff;text-shadow:0 0 18px #00cfff}
+.panel p{color:#c0d5e5;line-height:1.5}
+button{border:0;border-radius:10px;padding:14px 25px;background:#00d9ef;color:#00121b;font-weight:bold;font-size:17px;cursor:pointer;margin:6px}
+button:hover{background:#7af5ff}
+.small{font-size:13px;color:#9bb2c5}
+#pauseBtn{position:absolute;top:72px;right:20px;padding:9px 14px;font-size:14px}
+#touchControls{position:absolute;bottom:25px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 25px;pointer-events:none}
+.touch{pointer-events:auto;width:75px;height:65px;border:1px solid #00eaff88;background:#071525aa;color:white;font-size:27px;border-radius:15px;touch-action:none}
+.hidden{display:none!important}
+@media(min-width:800px){#touchControls{opacity:.35}}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="stat">SCORE: <span id="score">0</span></div>
+  <div class="stat">BEST: <span id="best">0</span></div>
+  <div class="stat">SPEED: <span id="speed">1</span>x</div>
+</div>
+
+<button id="pauseBtn" class="hidden">PAUSE</button>
+
+<div id="touchControls">
+  <button class="touch" id="leftBtn">◀</button>
+  <button class="touch" id="rightBtn">▶</button>
+</div>
+
+<div id="menu">
+  <div class="panel">
+    <h1>SLOPE</h1>
+    <p id="message">Roll down the neon track. Avoid the red obstacles and don't fall off!</p>
+    <p class="small">DESKTOP: A / D or arrow keys<br>MOBILE: Use the left and right buttons</p>
+    <h2 id="finalScore"></h2>
+    <button id="startBtn">PLAY NOW</button>
+    <p class="small">A new track is generated every time you play.</p>
+  </div>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let W=innerWidth,H=innerHeight,DPR=1;
+
+function resize(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  W=innerWidth;H=innerHeight;
+  canvas.width=W*DPR;
+  canvas.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener("resize",resize);
+resize();
+
+const scoreEl=document.getElementById("score");
+const bestEl=document.getElementById("best");
+const speedEl=document.getElementById("speed");
+const menu=document.getElementById("menu");
+const startBtn=document.getElementById("startBtn");
+const pauseBtn=document.getElementById("pauseBtn");
+
+let best=Number(localStorage.getItem("slopeBest")||0);
+bestEl.textContent=best;
+
+let running=false;
+let paused=false;
+let gameOver=false;
+let score=0;
+let speed=1;
+let playerX=0;
+let targetX=0;
+let ballRotation=0;
+let roadOffset=0;
+let obstacles=[];
+let spawnDistance=0;
+let lastTime=0;
+let keys={left:false,right:false};
+let particles=[];
+
+const MAX_Z=115;
+const HORIZON=.25;
+
+function random(min,max){
+  return Math.random()*(max-min)+min;
+}
+
+function resetGame(){
+  score=0;
+  speed=1;
+  playerX=0;
+  targetX=0;
+  ballRotation=0;
+  roadOffset=0;
+  obstacles=[];
+  particles=[];
+  spawnDistance=0;
+  gameOver=false;
+  paused=false;
+
+  // Start with some obstacles further down the track.
+  for(let i=0;i<4;i++){
+    spawnObstacle(55+i*32);
+  }
+
+  scoreEl.textContent="0";
+  speedEl.textContent="1";
+}
+
+function spawnObstacle(z){
+  const lane=Math.floor(random(0,3))-1;
+  const type=Math.random()<.27?"gap":"block";
+  obstacles.push({
+    z,
+    lane,
+    type,
+    width:type==="gap"?.78:.62,
+    hit:false
+  });
+}
+
+function project(z,x=0){
+  const depth=Math.max(0,Math.min(1,1-z/MAX_Z));
+  const curve=depth*depth;
+  const roadWidth=W*(.10+curve*.43);
+  const center=W/2+Math.sin(roadOffset*.0015+z*.009)*depth*W*.035;
+  const y=H*(HORIZON+depth*.72);
+  const px=center+x*roadWidth*.42;
+  return {x:px,y,width:roadWidth,scale:.12+depth*1.8,depth,center};
+}
+
+function drawBackground(){
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#05091b");
+  sky.addColorStop(.55,"#101b39");
+  sky.addColorStop(1,"#07101e");
+  ctx.fillStyle=sky;
+  ctx.fillRect(0,0,W,H);
+
+  // Stars
+  ctx.fillStyle="#b6faff";
+  for(let i=0;i<65;i++){
+    const x=(i*137)%W;
+    const y=(i*71)%(H*.48);
+    ctx.globalAlpha=.2+(i%4)*.12;
+    ctx.fillRect(x,y,2,2);
+  }
+  ctx.globalAlpha=1;
+
+  // Glowing horizon
+  const glow=ctx.createRadialGradient(W/2,H*.28,5,W/2,H*.28,W*.55);
+  glow.addColorStop(0,"#153f69aa");
+  glow.addColorStop(1,"#05081200");
+  ctx.fillStyle=glow;
+  ctx.fillRect(0,0,W,H*.7);
+}
+
+function drawRoad(){
+  const segments=45;
+
+  for(let i=segments;i>=0;i--){
+    const z1=MAX_Z-i*(MAX_Z/segments);
+    const z2=MAX_Z-(i+1)*(MAX_Z/segments);
+    if(z2<0)continue;
+
+    const a=project(z1);
+    const b=project(z2);
+    const leftA=a.center-a.width*.5;
+    const rightA=a.center+a.width*.5;
+    const leftB=b.center-b.width*.5;
+    const rightB=b.center+b.width*.5;
+
+    const stripe=Math.floor((z1+roadOffset*.025)/9)%2===0;
+    ctx.fillStyle=stripe?"#182943":"#14233a";
+    ctx.beginPath();
+    ctx.moveTo(leftA,a.y);
+    ctx.lineTo(rightA,a.y);
+    ctx.lineTo(rightB,b.y);
+    ctx.lineTo(leftB,b.y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Road edges
+    ctx.strokeStyle="#00edff";
+    ctx.lineWidth=Math.max(1,3*b.scale);
+    ctx.shadowBlur=12;
+    ctx.shadowColor="#00eaff";
+    ctx.beginPath();
+    ctx.moveTo(leftA,a.y);
+    ctx.lineTo(leftB,b.y);
+    ctx.moveTo(rightA,a.y);
+    ctx.lineTo(rightB,b.y);
+    ctx.stroke();
+    ctx.shadowBlur=0;
+  }
+
+  // Lane markings
+  for(let lane=-1;lane<=1;lane+=2){
+    for(let z=0;z<MAX_Z;z+=13){
+      const p=project((z+roadOffset*.045)%MAX_Z,lane*.5);
+      ctx.fillStyle="#4a718b";
+      ctx.globalAlpha=.35+p.depth*.5;
+      ctx.fillRect(p.x-1.5*p.scale,p.y-8*p.scale,3*p.scale,9*p.scale);
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+function drawObstacle(o){
+  const p=project(o.z,o.lane);
+  if(o.z<0||o.z>MAX_Z)return;
+
+  const size=48*p.scale;
+  const x=p.x;
+  const y=p.y;
+
+  if(o.type==="gap"){
+    const width=size*1.25;
+    const depth=size*.5;
+
+    ctx.fillStyle="#02040b";
+    ctx.shadowBlur=12;
+    ctx.shadowColor="#ff284c";
+    ctx.fillRect(x-width/2,y-depth/2,width,depth);
+    ctx.shadowBlur=0;
+    ctx.strokeStyle="#ff244c";
+    ctx.lineWidth=Math.max(1,2*p.scale);
+    ctx.strokeRect(x-width/2,y-depth/2,width,depth);
+    return;
+  }
+
+  // Red glowing block
+  const w=size*.8;
+  const h=size*.85;
+  ctx.shadowBlur=18*p.scale;
+  ctx.shadowColor="#ff174d";
+  ctx.fillStyle="#a90030";
+  ctx.fillRect(x-w/2,y-h,w,h);
+  ctx.fillStyle="#ff315e";
+  ctx.fillRect(x-w/2,y-h,w*.18,h);
+  ctx.fillStyle="#ff7992";
+  ctx.fillRect(x-w/2,y-h,w,h*.13);
+  ctx.strokeStyle="#ff91a7";
+  ctx.lineWidth=Math.max(1,2*p.scale);
+  ctx.strokeRect(x-w/2,y-h,w,h);
+  ctx.shadowBlur=0;
+}
+
+function drawBall(){
+  const road=project(0);
+  const x=road.center+playerX*road.width*.42;
+  const y=H*.83;
+  const radius=Math.max(12,Math.min(30,W*.027));
+
+  // Shadow
+  ctx.fillStyle="#0009";
+  ctx.beginPath();
+  ctx.ellipse(x,y+radius*.8,radius*1.5,radius*.42,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Ball glow
+  ctx.shadowBlur=25;
+  ctx.shadowColor="#00edff";
+
+  const grad=ctx.createRadialGradient(
+    x-radius*.35,y-radius*.45,2,
+    x,y,radius
+  );
+  grad.addColorStop(0,"#ffffff");
+  grad.addColorStop(.25,"#8cffff");
+  grad.addColorStop(.65,"#00b9d9");
+  grad.addColorStop(1,"#075079");
+
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.arc(x,y,radius,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+
+  // Rotating ball markings
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(ballRotation);
+  ctx.strokeStyle="#d9ffff";
+  ctx.lineWidth=2;
+  ctx.globalAlpha=.8;
+  ctx.beginPath();
+  ctx.ellipse(0,0,radius*.45,radius,0,0,Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(0,0,radius,radius*.35,0,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.life-=.025;
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x,p.y,p.size,p.size);
+    if(p.life<=0)particles.splice(i,1);
+  }
+  ctx.globalAlpha=1;
+}
+
+function makeCrashParticles(){
+  const x=W/2+playerX*W*.2;
+  const y=H*.83;
+  for(let i=0;i<35;i++){
+    particles.push({
+      x,y,
+      vx:random(-5,5),
+      vy:random(-6,3),
+      life:1,
+      size:random(2,6),
+      color:Math.random()<.5?"#00eaff":"#ff315e"
+    });
+  }
+}
+
+function draw(){
+  drawBackground();
+  drawRoad();
+
+  const sorted=[...obstacles].sort((a,b)=>b.z-a.z);
+  for(const o of sorted)drawObstacle(o);
+
+  drawBall();
+  drawParticles();
+}
+
+function update(dt){
+  if(!running||paused)return;
+
+  const step=dt/16.67;
+
+  speed=Math.min(3.3,1+score/900);
+  const movement=1.05*speed*step;
+
+  roadOffset+=movement*12;
+  ballRotation+=movement*.075;
+
+  if(keys.left)targetX-=.075*step;
+  if(keys.right)targetX+=.075*step;
+
+  targetX=Math.max(-1.22,Math.min(1.22,targetX));
+  playerX+=(targetX-playerX)*Math.min(1,.19*step);
+
+  score+=movement*.55;
+  scoreEl.textContent=Math.floor(score);
+  speedEl.textContent=speed.toFixed(1);
+
+  spawnDistance+=movement;
+
+  if(spawnDistance>36){
+    spawnObstacle(MAX_Z);
+    spawnDistance=0;
+  }
+
+  for(let i=obstacles.length-1;i>=0;i--){
+    const o=obstacles[i];
+    o.z-=movement;
+
+    // Collision zone
+    if(o.z<4&&o.z>-2&&!o.hit){
+      const difference=Math.abs(playerX-o.lane*.5);
+
+      if(difference<o.width*.62){
+        if(o.type==="block"){
+          endGame();
+          return;
+        }
+        if(o.type==="gap"){
+          endGame();
+          return;
+        }
+      }
+      o.hit=true;
+    }
+
+    if(o.z<-10)obstacles.splice(i,1);
+  }
+
+  if(Math.abs(playerX)>1.12){
+    endGame();
+  }
+}
+
+function endGame(){
+  running=false;
+  gameOver=true;
+  makeCrashParticles();
+
+  const final=Math.floor(score);
+  if(final>best){
+    best=final;
+    localStorage.setItem("slopeBest",best);
+    bestEl.textContent=best;
+  }
+
+  draw();
+
+  document.getElementById("message").textContent=
+    "You crashed! Try again and beat your high score.";
+
+  document.getElementById("finalScore").textContent=
+    "SCORE: "+final+"  |  BEST: "+best;
+
+  startBtn.textContent="PLAY AGAIN";
+  pauseBtn.classList.add("hidden");
+  menu.classList.remove("hidden");
+}
+
+function startGame(){
+  resetGame();
+  menu.classList.add("hidden");
+  pauseBtn.classList.remove("hidden");
+  running=true;
+  lastTime=performance.now();
+}
+
+function togglePause(){
+  if(!running&&!paused)return;
+
+  paused=!paused;
+  if(paused){
+    running=false;
+    document.getElementById("message").textContent="Game paused.";
+    document.getElementById("finalScore").textContent=
+      "SCORE: "+Math.floor(score);
+    startBtn.textContent="RESUME";
+    menu.classList.remove("hidden");
+  }else{
+    running=true;
+    menu.classList.add("hidden");
+    lastTime=performance.now();
+  }
+}
+
+function loop(time){
+  const dt=Math.min(40,time-lastTime||16.67);
+  lastTime=time;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+startBtn.addEventListener("click",()=>{
+  if(paused){
+    paused=false;
+    running=true;
+    menu.classList.add("hidden");
+    lastTime=performance.now();
+  }else{
+    startGame();
+  }
+});
+
+pauseBtn.addEventListener("click",togglePause);
+
+addEventListener("keydown",e=>{
+  if(["ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
+
+  if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")keys.left=true;
+  if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")keys.right=true;
+
+  if(e.key.toLowerCase()==="p"&&!e.repeat)togglePause();
+});
+
+addEventListener("keyup",e=>{
+  if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")keys.left=false;
+  if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")keys.right=false;
+});
+
+function holdButton(id,direction){
+  const button=document.getElementById(id);
+  button.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    keys[direction]=true;
+    button.setPointerCapture(e.pointerId);
+  });
+  button.addEventListener("pointerup",()=>keys[direction]=false);
+  button.addEventListener("pointercancel",()=>keys[direction]=false);
+  button.addEventListener("lostpointercapture",()=>keys[direction]=false);
+}
+
+holdButton("leftBtn","left");
+holdButton("rightBtn","right");
+
+// Swipe controls for mobile
+let touchStart=null;
+
+canvas.addEventListener("pointerdown",e=>{
+  if(e.pointerType==="touch")touchStart=e.clientX;
+});
+
+canvas.addEventListener("pointermove",e=>{
+  if(touchStart===null||e.pointerType!=="touch")return;
+  const difference=e.clientX-touchStart;
+  targetX+=difference/W*2.5;
+  targetX=Math.max(-1.22,Math.min(1.22,targetX));
+  touchStart=e.clientX;
+});
+
+canvas.addEventListener("pointerup",()=>touchStart=null);
+canvas.addEventListener("pointercancel",()=>touchStart=null);
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
