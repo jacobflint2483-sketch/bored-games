@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2483 Arcade</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#090b12;color:white;
+ font-family:Arial,sans-serif;min-height:100vh;
+}
+button,input,textarea{font:inherit}
+button{
+ background:#7055ff;color:white;border:0;
+ padding:12px 18px;border-radius:10px;
+ cursor:pointer;font-weight:bold;
+}
+button:hover{filter:brightness(1.2)}
+input,textarea{
+ background:#171b29;color:white;border:1px solid #30364a;
+ padding:12px;border-radius:9px;width:100%;
+}
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+.center{
+ min-height:100vh;display:flex;align-items:center;
+ justify-content:center;padding:20px;
+}
+.calculator{
+ width:340px;background:#131724;padding:24px;
+ border:1px solid #272e42;border-radius:22px;
+ box-shadow:0 20px 70px #0008;
+}
+.logo{text-align:center;font-size:23px;font-weight:900;
+ letter-spacing:4px;margin-bottom:20px}
+.display{
+ background:#090d16;border-radius:12px;
+ padding:20px;text-align:right;font-size:34px;
+ min-height:82px;margin-bottom:15px;overflow:hidden;
+}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.keys button{font-size:20px;min-height:58px;background:#252c40}
+.keys .operator{background:#7055ff}
+.keys .special{background:#394258}
+.keys .equals{background:#13a87c}
+.hint{text-align:center;color:#727d96;font-size:12px;margin-top:18px}
+header{
+ display:flex;justify-content:space-between;align-items:center;
+ padding:22px 5%;border-bottom:1px solid #252b3d;
+ gap:15px;flex-wrap:wrap;
+}
+.brand{font-size:23px;font-weight:900;letter-spacing:3px}
+.container{max-width:1150px;margin:auto;padding:35px 22px}
+.hero{
+ padding:35px;border-radius:20px;
+ background:linear-gradient(120deg,#242052,#111827);
+ margin-bottom:30px;
+}
+.hero h1{font-size:38px;margin:0 0 10px}
+.muted{color:#9aa5bc}
+.grid{
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+ gap:18px;
+}
+.card{
+ background:#151a28;border:1px solid #292f43;
+ border-radius:16px;padding:20px;
+ min-height:160px;display:flex;flex-direction:column;
+ justify-content:space-between;
+}
+.card h3{margin:0 0 8px}
+.card p{color:#9aa5bc;font-size:14px}
+.card button{margin-top:12px}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap}
+.secondary{background:#293147}
+.danger{background:#b83d55}
+.module-form{
+ background:#151a28;padding:22px;border-radius:16px;
+ margin-bottom:25px;border:1px solid #292f43;
+}
+.module-form label{display:block;margin:14px 0 7px;color:#aeb8cd}
+.module-form textarea{min-height:100px;resize:vertical}
+#gameFrame{
+ width:100%;height:calc(100vh - 90px);border:0;background:#080a10;
+}
+.gamebar{display:flex;align-items:center;gap:12px;padding:12px 18px}
+.hidden{display:none!important}
+footer{text-align:center;color:#657087;padding:35px}
+@media(max-width:500px){
+ .calculator{width:100%}
+ .hero h1{font-size:29px}
+}
+</style>
+</head>
+<body>
+
+<!-- CALCULATOR HOME -->
+<section id="home" class="page active">
+ <div class="center">
+  <div class="calculator">
+   <div class="logo">2483 ARCADE</div>
+   <div id="display" class="display">0</div>
+   <div class="keys">
+    <button class="special" onclick="clearCalc()">AC</button>
+    <button class="special" onclick="backspace()">DEL</button>
+    <button class="special" onclick="append('%')">%</button>
+    <button class="operator" onclick="append('/')">÷</button>
+
+    <button onclick="append('7')">7</button>
+    <button onclick="append('8')">8</button>
+    <button onclick="append('9')">9</button>
+    <button class="operator" onclick="append('*')">×</button>
+
+    <button onclick="append('4')">4</button>
+    <button onclick="append('5')">5</button>
+    <button onclick="append('6')">6</button>
+    <button class="operator" onclick="append('-')">−</button>
+
+    <button onclick="append('1')">1</button>
+    <button onclick="append('2')">2</button>
+    <button onclick="append('3')">3</button>
+    <button class="operator" onclick="append('+')">+</button>
+
+    <button onclick="append('0')">0</button>
+    <button onclick="append('.')">.</button>
+    <button class="equals" style="grid-column:span 2" onclick="calculate()">=</button>
+   </div>
+   <div class="hint">Enter your calculation above</div>
+  </div>
+ </div>
+</section>
+
+<!-- ARCADE -->
+<section id="arcade" class="page">
+ <header>
+  <div class="brand">2483 <span style="color:#927dff">ARCADE</span></div>
+  <div class="top-actions">
+   <button class="secondary" onclick="showPage('home')">Calculator</button>
+   <button onclick="showPage('developer')">Developer</button>
+  </div>
+ </header>
+ <main class="container">
+  <div class="hero">
+   <p class="muted">WELCOME TO YOUR ARCADE</p>
+   <h1>What are we playing today?</h1>
+   <p class="muted">Your personal collection of games, all in one place.</p>
+  </div>
+  <h2>Game library</h2>
+  <div id="gameGrid" class="grid"></div>
+  <footer>2483 ARCADE · YOUR PERSONAL GAME COLLECTION</footer>
+ </main>
+</section>
+
+<!-- DEVELOPER -->
+<section id="developer" class="page">
+ <header>
+  <div class="brand">DEVELOPER PANEL</div>
+  <div class="top-actions">
+   <button class="secondary" onclick="showPage('arcade')">Back to arcade</button>
+   <button class="danger" onclick="showPage('home')">Exit</button>
+  </div>
+ </header>
+ <main class="container">
+  <div class="hero">
+   <h1>Module manager</h1>
+   <p class="muted">Add, edit and organise games in your arcade.</p>
+  </div>
+
+  <div class="module-form">
+   <h2 id="formTitle">Add a new module</h2>
+   <label>Game name</label>
+   <input id="gameName" placeholder="e.g. PolyTrack">
+   <label>Description</label>
+   <input id="gameDescription" placeholder="Describe your game">
+   <label>Game URL</label>
+   <input id="gameURL" placeholder="https://example.com/game">
+   <label>Or paste a complete HTML game</label>
+   <textarea id="gameHTML" placeholder="Paste your HTML game code here..."></textarea>
+   <p class="muted" style="font-size:12px">
+    Use either a URL or HTML code. Some websites block embedding, so their URLs may not work inside the arcade.
+   </p>
+   <div class="top-actions">
+    <button onclick="saveModule()">Save module</button>
+    <button class="secondary" onclick="resetForm()">Clear</button>
+   </div>
+  </div>
+
+  <h2>Your modules</h2>
+  <div id="developerGrid" class="grid"></div>
+ </main>
+</section>
+
+<!-- GAME PLAYER -->
+<section id="player" class="page">
+ <div class="gamebar">
+  <button class="secondary" onclick="showPage('arcade')">← Back</button>
+  <strong id="playingTitle">Game</strong>
+  <button class="secondary" onclick="fullscreenGame()">Fullscreen</button>
+ </div>
+ <iframe id="gameFrame" title="Game player" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
+</section>
+
+<script>
+let expression = "";
+let modules = [];
+let editingId = null;
+
+const $ = id => document.getElementById(id);
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ $(id).classList.add("active");
+ if(id==="arcade") renderGames();
+ if(id==="developer") renderDeveloper();
+}
+
+function updateDisplay(){
+ $("display").textContent = expression || "0";
+}
+
+function append(value){
+ if(expression.length>45)return;
+ expression += value;
+ updateDisplay();
+}
+
+function clearCalc(){
+ expression="";
+ updateDisplay();
+}
+
+function backspace(){
+ expression=expression.slice(0,-1);
+ updateDisplay();
+}
+
+function calculate(){
+ try{
+  if(!expression || !/^[0-9+\-*/%.() ]+$/.test(expression))return;
+  const result=Function('"use strict";return ('+expression+')')();
+  if(!Number.isFinite(result))throw Error();
+  expression=String(Number(result.toFixed(10)));
+  updateDisplay();
+ }catch{
+  $("display").textContent="Error";
+  expression="";
+ }
+}
+
+// Secret calculator code
+document.addEventListener("keydown",e=>{
+ if(!$("home").classList.contains("active"))return;
+ if(/^[0-9]$/.test(e.key))append(e.key);
+ else if(["+","-","*","/","."].includes(e.key))append(e.key);
+ else if(e.key==="Enter")calculate();
+ else if(e.key==="Backspace")backspace();
+ else if(e.key==="Escape")clearCalc();
+});
+
+let secretSequence="";
+function checkSecret(){
+ if(expression==="2483"){
+  clearCalc();
+  showPage("arcade");
+ }
+}
+const originalAppend=append;
+append=function(value){
+ originalAppend(value);
+ checkSecret();
+};
+
+// Modules stored locally
+function loadModules(){
+ try{
+  modules=JSON.parse(localStorage.getItem("arcadeModules")||"[]");
+  if(!Array.isArray(modules))modules=[];
+ }catch{modules=[]}
+}
+function saveModules(){
+ localStorage.setItem("arcadeModules",JSON.stringify(modules));
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function renderGames(){
+ $("gameGrid").innerHTML="";
+ if(!modules.length){
+  $("gameGrid").innerHTML='<p class="muted">No games added yet. Open Developer to add your first game.</p>';
+  return;
+ }
+ modules.forEach(game=>{
+  const card=document.createElement("div");
+  card.className="card";
+  card.innerHTML=`
+   <div>
+    <h3>${escapeHTML(game.name)}</h3>
+    <p>${escapeHTML(game.description)}</p>
+   </div>
+   <button>PLAY NOW →</button>`;
+  card.querySelector("button").onclick=()=>playGame(game.id);
+  $("gameGrid").appendChild(card);
+ });
+}
+
+function renderDeveloper(){
+ $("developerGrid").innerHTML="";
+ modules.forEach(game=>{
+  const card=document.createElement("div");
+  card.className="card";
+  card.innerHTML=`
+   <div>
+    <h3>${escapeHTML(game.name)}</h3>
+    <p>${escapeHTML(game.description)}</p>
+   </div>
+   <div class="top-actions">
+    <button class="secondary edit">Edit</button>
+    <button class="danger delete">Delete</button>
+   </div>`;
+  card.querySelector(".edit").onclick=()=>editModule(game.id);
+  card.querySelector(".delete").onclick=()=>{
+   if(confirm("Delete "+game.name+"?")){
+    modules=modules.filter(m=>m.id!==game.id);
+    saveModules();
+    renderDeveloper();
+   }
+  };
+  $("developerGrid").appendChild(card);
+ });
+}
+
+function saveModule(){
+ const name=$("gameName").value.trim();
+ const description=$("gameDescription").value.trim();
+ const url=$("gameURL").value.trim();
+ const html=$("gameHTML").value;
+
+ if(!name){alert("Please enter a game name.");return}
+ if(!url&&!html.trim()){alert("Please enter a game URL or HTML code.");return}
+ if(url&&!/^https?:\/\//i.test(url)){
+  alert("Please use a full http:// or https:// URL.");return;
+ }
+
+ const data={id:editingId||Date.now().toString(),name,description,url,html};
+ if(editingId){
+  modules=modules.map(m=>m.id===editingId?data:m);
+ }else{
+  modules.push(data);
+ }
+ saveModules();
+ resetForm();
+ renderDeveloper();
+ alert("Module saved!");
+}
+
+function editModule(id){
+ const game=modules.find(m=>m.id===id);
+ if(!game)return;
+ editingId=id;
+ $("formTitle").textContent="Edit module";
+ $("gameName").value=game.name;
+ $("gameDescription").value=game.description;
+ $("gameURL").value=game.url||"";
+ $("gameHTML").value=game.html||"";
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function resetForm(){
+ editingId=null;
+ $("formTitle").textContent="Add a new module";
+ $("gameName").value="";
+ $("gameDescription").value="";
+ $("gameURL").value="";
+ $("gameHTML").value="";
+}
+
+function playGame(id){
+ const game=modules.find(m=>m.id===id);
+ if(!game)return;
+ $("playingTitle").textContent=game.name;
+ const frame=$("gameFrame");
+ if(game.html){
+  frame.removeAttribute("src");
+  frame.srcdoc=game.html;
+ }else{
+  frame.removeAttribute("srcdoc");
+  frame.src=game.url;
+ }
+ showPage("player");
+}
+
+function fullscreenGame(){
+ const frame=$("gameFrame");
+ if(frame.requestFullscreen)frame.requestFullscreen();
+}
+
+loadModules();
+renderGames();
+updateDisplay();
+</script>
+</body>
+</html>
