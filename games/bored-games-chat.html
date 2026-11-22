@@ -5,547 +5,1189 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bored Games Chat</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:#eef2ff;font-family:Arial,sans-serif}
-button,input,textarea{font:inherit}
-button{cursor:pointer;border:0;border-radius:9px;padding:11px 15px;background:#7058ed;color:white;font-weight:700}
-button:hover{filter:brightness(1.12)}
-button:disabled{opacity:.5;cursor:not-allowed}
-input,textarea{background:#111a30;color:white;border:1px solid #293653;border-radius:9px;padding:12px;width:100%;outline:none}
-input:focus,textarea:focus{border-color:#8b78ff}
-small,.muted{color:#94a3b8}
-#auth{max-width:420px;margin:9vh auto;padding:28px;background:#151e33;border:1px solid #293653;border-radius:18px}
-.logo{font-size:27px;font-weight:900;margin-bottom:7px}
-.logo span{color:#9a89ff}
-#auth h2{margin-top:25px}
-#auth input{margin:7px 0}
-.auth-actions{display:flex;gap:9px;margin-top:12px}
-.auth-actions button{flex:1}
-#authMessage{min-height:22px;color:#fca5a5;margin-top:12px;font-size:14px}
-#app{display:none;height:100vh;min-height:500px}
-.topbar{height:62px;border-bottom:1px solid #26334c;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#111a2d}
-.topbar .logo{font-size:20px;margin:0}
-.user-area{display:flex;align-items:center;gap:12px}
-.user-area button{padding:8px 12px;background:#293653}
-.layout{height:calc(100vh - 62px);display:grid;grid-template-columns:245px 1fr}
-.sidebar{background:#10182a;border-right:1px solid #26334c;padding:16px;overflow-y:auto}
-.side-heading{font-size:11px;color:#8290aa;font-weight:800;letter-spacing:1.5px;margin:8px 0 13px}
-.room{width:100%;display:block;text-align:left;background:transparent;color:#cbd5e1;margin:4px 0;padding:12px;border-radius:9px}
-.room.active{background:#29234e;color:#c4baff}
-#addRoom{width:100%;margin-top:15px;background:#24314c}
-.chat{display:flex;flex-direction:column;min-width:0}
-.chat-head{padding:17px 22px;border-bottom:1px solid #26334c;display:flex;justify-content:space-between;align-items:center}
-.chat-head h2{font-size:19px;margin:0}
-#messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:13px}
-.message{background:#151f34;border:1px solid #263653;border-radius:12px;padding:12px 14px;max-width:850px;width:fit-content;min-width:180px}
-.message.mine{border-color:#5747a8;background:#1c1b3b}
-.msg-top{display:flex;gap:12px;align-items:center;margin-bottom:7px}
-.msg-name{font-weight:800;color:#b9adff}
-.msg-time{font-size:11px;color:#8290aa}
-.msg-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
-.msg-actions{display:flex;gap:7px;margin-top:9px}
-.msg-actions button{font-size:11px;padding:5px 8px;background:#293653}
-.msg-actions .delete{background:#713344}
-.composer{padding:15px 20px;border-top:1px solid #26334c;display:flex;gap:10px;background:#10182a}
-.composer textarea{resize:none;height:48px;max-height:120px}
-.composer button{min-width:85px}
-#status{font-size:12px;color:#94a3b8}
-#notice{padding:9px 20px;color:#fca5a5;font-size:13px;min-height:18px}
-.empty{color:#94a3b8;text-align:center;margin:auto}
-.modal-bg{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px}
-.modal{background:#151e33;border:1px solid #354565;border-radius:15px;padding:22px;width:min(400px,100%)}
-.modal input{margin:12px 0}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end}
-@media(max-width:650px){
- .layout{grid-template-columns:115px 1fr}
- .sidebar{padding:9px}
- .room{font-size:12px;padding:10px 7px;overflow-wrap:anywhere}
- .side-heading{font-size:9px}
- .topbar{padding:0 10px}
- .topbar .logo{font-size:16px}
- .user-area{gap:5px;font-size:12px}
- .user-area button{font-size:11px;padding:8px}
- .chat-head{padding:13px}
- #messages{padding:12px}
- .composer{padding:10px}
- .composer button{min-width:65px;padding:8px}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #10121a;
+  color: #f2f3f8;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+}
+
+button, input, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 15px;
+  color: white;
+  background: #6658e8;
+  font-weight: bold;
+}
+
+button:hover {
+  filter: brightness(1.12);
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #343747;
+  border-radius: 9px;
+  outline: none;
+  background: #191c28;
+  color: white;
+}
+
+input:focus, textarea:focus {
+  border-color: #8175ff;
+}
+
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 410px;
+  padding: 30px;
+  background: #191c28;
+  border: 1px solid #303445;
+  border-radius: 17px;
+  box-shadow: 0 15px 50px #0005;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #999eb2;
+  margin-bottom: 25px;
+}
+
+.field {
+  margin-bottom: 15px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #c4c7d4;
+  font-size: 14px;
+}
+
+.full-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.secondary-button {
+  background: #303445;
+}
+
+#authMessage {
+  color: #ff9a9a;
+  font-size: 13px;
+  margin-top: 15px;
+  min-height: 18px;
+  line-height: 1.5;
+}
+
+#chatScreen {
+  display: none;
+  height: 100vh;
+  min-height: 500px;
+}
+
+.app {
+  height: 100%;
+  display: flex;
+}
+
+.sidebar {
+  width: 255px;
+  flex-shrink: 0;
+  background: #171a25;
+  border-right: 1px solid #303445;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.sidebar-logo {
+  font-size: 21px;
+  font-weight: 900;
+  margin-bottom: 25px;
+}
+
+.sidebar-heading {
+  color: #9298ad;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin: 12px 0;
+}
+
+#rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+}
+
+.room-button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: #c3c7d5;
+  font-weight: normal;
+}
+
+.room-button.active {
+  background: #34304f;
+  color: white;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+#userLabel {
+  color: #aeb3c5;
+  font-size: 13px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+#adminTools {
+  display: none;
+  border-top: 1px solid #303445;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+#adminTools button {
+  width: 100%;
+  margin-bottom: 8px;
+  background: #5141a9;
+}
+
+#adminTools .danger {
+  background: #a83e4a;
+}
+
+#logoutButton {
+  width: 100%;
+  background: #303445;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  min-height: 70px;
+  border-bottom: 1px solid #303445;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 22px;
+  gap: 12px;
+}
+
+#roomTitle {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#connectionStatus {
+  color: #9ca3b8;
+  font-size: 12px;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.message {
+  background: #1b1e2b;
+  border: 1px solid #303445;
+  border-radius: 12px;
+  padding: 13px 15px;
+  max-width: 850px;
+  width: 100%;
+  align-self: center;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.message-name {
+  font-weight: bold;
+  color: #a99fff;
+}
+
+.message-time {
+  color: #858ba0;
+  font-size: 11px;
+}
+
+.message-text {
+  color: #e5e6ed;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.message-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.message-actions button {
+  padding: 6px 9px;
+  font-size: 11px;
+  background: #303445;
+}
+
+.message-actions .delete-button {
+  background: #913b47;
+}
+
+.composer {
+  padding: 16px 22px;
+  border-top: 1px solid #303445;
+  display: flex;
+  gap: 10px;
+  background: #171a25;
+}
+
+.composer input {
+  flex: 1;
+  min-width: 0;
+}
+
+.composer button {
+  min-width: 85px;
+}
+
+.notice {
+  color: #8e94a9;
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+}
+
+#reportPanel {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: #000a;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background: #1b1e2b;
+  border: 1px solid #41465a;
+  border-radius: 15px;
+  padding: 22px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+.modal textarea {
+  resize: vertical;
+  min-height: 90px;
+  margin: 12px 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+}
+
+.report-item {
+  background: #292d3d;
+  border-radius: 9px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+
+.report-item small {
+  color: #a5abc0;
+}
+
+#adminMessage {
+  color: #a5abc0;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+@media (max-width: 650px) {
+  .sidebar {
+    width: 125px;
+    padding: 10px;
+  }
+
+  .sidebar-logo {
+    font-size: 16px;
+  }
+
+  .room-button {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .topbar {
+    padding: 12px;
+  }
+
+  #messages {
+    padding: 12px;
+  }
+
+  .composer {
+    padding: 10px;
+  }
+
+  .composer button {
+    min-width: 65px;
+    padding: 10px;
+  }
+
+  .message {
+    padding: 11px;
+  }
+}
+
+@media (max-width: 390px) {
+  .sidebar {
+    width: 105px;
+  }
+
+  .sidebar-logo {
+    font-size: 14px;
+  }
+
+  #userLabel {
+    font-size: 11px;
+  }
 }
 </style>
 </head>
+
 <body>
 
-<section id="auth">
- <div class="logo">BORED <span>GAMES</span></div>
- <div class="muted">Community chat</div>
- <h2 id="authTitle">Welcome back</h2>
- <p class="muted" id="authDescription">Log in to join the conversation.</p>
- <input id="username" placeholder="Username" maxlength="20" autocomplete="username">
- <input id="password" type="password" placeholder="Password" autocomplete="current-password">
- <div class="auth-actions">
-  <button id="loginBtn">Log in</button>
-  <button id="signupBtn">Create account</button>
- </div>
- <div id="authMessage"></div>
- <small>Usernames: 3–20 letters, numbers or underscores. Passwords: at least 8 characters.</small>
+<section id="loginScreen">
+  <div class="login-card">
+    <div class="logo">BORED GAMES</div>
+    <div class="subtitle">Community Chat</div>
+
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" maxlength="20" placeholder="Choose a username" autocomplete="username">
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="At least 8 characters" autocomplete="current-password">
+    </div>
+
+    <button class="full-button" id="loginButton">Log in</button>
+    <button class="full-button secondary-button" id="signupButton">Create account</button>
+
+    <div id="authMessage"></div>
+  </div>
 </section>
 
-<section id="app">
- <header class="topbar">
-  <div class="logo">BORED <span>GAMES</span> CHAT</div>
-  <div class="user-area">
-   <span id="currentUser"></span>
-   <button id="logoutBtn">Log out</button>
+<section id="chatScreen">
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">BORED GAMES</div>
+
+      <div class="sidebar-heading">CHAT ROOMS</div>
+      <div id="rooms">
+        <div class="notice">Loading rooms...</div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div id="userLabel"></div>
+
+        <div id="adminTools">
+          <button id="createRoomButton">+ Create room</button>
+          <button id="reportsButton">View reports</button>
+        </div>
+
+        <button id="logoutButton">Log out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div id="roomTitle">Public Chat</div>
+        <div id="connectionStatus">Connecting...</div>
+      </header>
+
+      <div id="messages">
+        <div class="notice">Loading messages...</div>
+      </div>
+
+      <form class="composer" id="messageForm">
+        <input id="messageInput" maxlength="1000" placeholder="Write a message..." autocomplete="off">
+        <button id="sendButton" type="submit">Send</button>
+      </form>
+    </main>
+
   </div>
- </header>
-
- <div class="layout">
-  <aside class="sidebar">
-   <div class="side-heading">CHAT ROOMS</div>
-   <div id="rooms"></div>
-   <button id="addRoom" style="display:none">+ Create room</button>
-  </aside>
-
-  <main class="chat">
-   <div class="chat-head">
-    <h2 id="roomTitle">Public Chat</h2>
-    <span id="status">Connecting...</span>
-   </div>
-   <div id="notice"></div>
-   <div id="messages"><div class="empty">Loading chat...</div></div>
-   <form class="composer" id="messageForm">
-    <textarea id="messageInput" maxlength="500" placeholder="Write a message..." required></textarea>
-    <button id="sendBtn">Send</button>
-   </form>
-  </main>
- </div>
 </section>
 
-<div class="modal-bg" id="roomModal">
- <div class="modal">
-  <h2>Create a room</h2>
-  <p class="muted">Only the chat owner can create rooms.</p>
-  <input id="newRoomName" maxlength="30" placeholder="Room name">
-  <div class="modal-actions">
-   <button id="cancelRoom" style="background:#293653">Cancel</button>
-   <button id="confirmRoom">Create</button>
+<div id="reportPanel">
+  <div class="modal">
+    <h2 id="modalTitle">Reports</h2>
+    <div id="modalContent"></div>
+    <div id="adminMessage"></div>
+    <div class="modal-actions" style="margin-top:15px">
+      <button class="secondary-button" id="closeModalButton">Close</button>
+    </div>
   </div>
-  <div id="roomError" class="muted"></div>
- </div>
 </div>
 
 <script>
+"use strict";
+
+/* SUPABASE CONNECTION */
+
 const SUPABASE_URL = "https://jxfbnahykmivqsziftvt.supabase.co";
-const SUPABASE_KEY = "sb_publishable_UKC4_3dM6mlrqt0vCdg_E8kuQBto";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY = "sb_publishable_UKC4_3dM6mlrqt3bt0vCdg_E8kuQBto";
 
-const $ = id => document.getElementById(id);
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* ELEMENTS */
+
+const loginScreen = document.getElementById("loginScreen");
+const chatScreen = document.getElementById("chatScreen");
+
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const authMessage = document.getElementById("authMessage");
+
+const roomsElement = document.getElementById("rooms");
+const messagesElement = document.getElementById("messages");
+
+const roomTitle = document.getElementById("roomTitle");
+const messageInput = document.getElementById("messageInput");
+const connectionStatus = document.getElementById("connectionStatus");
+
+const reportPanel = document.getElementById("reportPanel");
+const modalTitle = document.getElementById("modalTitle");
+const modalContent = document.getElementById("modalContent");
+
+
+/* APP STATE */
 
 let currentUser = null;
+let currentUsername = "";
 let currentRoom = null;
 let isAdmin = false;
-let messageChannel = null;
-let roomsCache = [];
 
-function authEmail(name) {
- return name.trim().toLowerCase() + "@boredgames.example.com";
-}
+let rooms = [];
+let realtimeChannel = null;
+let currentMessages = [];
+let loadingMessages = false;
 
-function validUsername(name) {
- return /^[a-z0-9_]{3,20}$/i.test(name);
-}
+
+/* HELPERS */
 
 function showAuthMessage(message) {
- $("authMessage").textContent = message;
+  authMessage.textContent = message;
 }
 
-function showNotice(message) {
- $("notice").textContent = message;
+function authEmail(username) {
+  return username.trim().toLowerCase() + "@boredgames.example.com";
 }
 
-function formatTime(date) {
- return new Date(date).toLocaleTimeString([], {
-  hour:"2-digit", minute:"2-digit"
- });
+function validUsername(username) {
+  return /^[a-z0-9_]{3,20}$/i.test(username);
 }
 
-async function signUp() {
- const username = $("username").value.trim();
- const password = $("password").value;
+function showChat() {
+  loginScreen.style.display = "none";
+  chatScreen.style.display = "block";
+}
 
- if (!validUsername(username)) {
-  showAuthMessage("Username must be 3–20 characters and use only letters, numbers or underscores.");
-  return;
- }
- if (password.length < 8) {
-  showAuthMessage("Your password must be at least 8 characters.");
-  return;
- }
+function showLogin() {
+  chatScreen.style.display = "none";
+  loginScreen.style.display = "flex";
+}
 
- $("signupBtn").disabled = true;
- showAuthMessage("Creating your account...");
+function formatTime(dateString) {
+  const date = new Date(dateString);
 
- const {data, error} = await db.auth.signUp({
-  email: authEmail(username),
-  password,
-  options: {
-   data: {nickname: username}
+  if (Number.isNaN(date.getTime())) {
+    return "";
   }
- });
 
- $("signupBtn").disabled = false;
-
- if (error) {
-  showAuthMessage(error.message);
-  return;
- }
-
- if (!data.session) {
-  showAuthMessage("Account created, but email confirmation is still enabled in Supabase. Turn off Confirm email in the Email provider settings before new players can log in.");
-  return;
- }
-
- showAuthMessage("");
- await startApp(data.session.user);
-}
-
-async function logIn() {
- const username = $("username").value.trim();
- const password = $("password").value;
-
- if (!validUsername(username)) {
-  showAuthMessage("Enter a valid username.");
-  return;
- }
- if (!password) {
-  showAuthMessage("Enter your password.");
-  return;
- }
-
- $("loginBtn").disabled = true;
- showAuthMessage("Logging in...");
-
- const {data, error} = await db.auth.signInWithPassword({
-  email: authEmail(username),
-  password
- });
-
- $("loginBtn").disabled = false;
-
- if (error) {
-  showAuthMessage("Login failed. Check your username and password.");
-  return;
- }
-
- showAuthMessage("");
- await startApp(data.user);
-}
-
-async function startApp(user) {
- currentUser = user;
- const username = user.user_metadata?.nickname ||
-  user.email?.split("@")[0] || "Player";
-
- $("currentUser").textContent = username;
- $("auth").style.display = "none";
- $("app").style.display = "block";
-
- const {data: adminResult, error: adminError} =
-  await db.rpc("is_chat_admin");
-
- isAdmin = !adminError && adminResult === true;
- $("addRoom").style.display = isAdmin ? "block" : "none";
-
- await loadRooms();
- $("status").textContent = "Connected";
-}
-
-async function logOut() {
- if (messageChannel) {
-  await db.removeChannel(messageChannel);
-  messageChannel = null;
- }
- await db.auth.signOut();
- currentUser = null;
- currentRoom = null;
- $("app").style.display = "none";
- $("auth").style.display = "block";
- $("password").value = "";
- showAuthMessage("");
-}
-
-async function loadRooms() {
- const {data, error} = await db
-  .from("chat_rooms")
-  .select("*")
-  .order("created_at", {ascending:true});
-
- if (error) {
-  showNotice("Couldn't load rooms: " + error.message);
-  return;
- }
-
- roomsCache = data || [];
- $("rooms").replaceChildren();
-
- roomsCache.forEach(room => {
-  const button = document.createElement("button");
-  button.className = "room" +
-   (currentRoom?.id === room.id ? " active" : "");
-  button.textContent = " # " + room.name;
-  button.addEventListener("click", () => selectRoom(room));
-  $("rooms").appendChild(button);
- });
-
- if (!currentRoom && roomsCache.length) {
-  const first = roomsCache.find(r =>
-   r.name.toLowerCase() === "public chat"
-  ) || roomsCache[0];
-  await selectRoom(first);
- }
-}
-
-async function selectRoom(room) {
- currentRoom = room;
- $("roomTitle").textContent = room.name;
- $("messages").replaceChildren();
- $("messages").innerHTML = '<div class="empty">Loading messages...</div>';
-
- document.querySelectorAll(".room").forEach((button, index) => {
-  button.classList.toggle("active", roomsCache[index]?.id === room.id);
- });
-
- if (messageChannel) {
-  await db.removeChannel(messageChannel);
-  messageChannel = null;
- }
-
- await loadMessages();
-
- messageChannel = db.channel("room-" + room.id)
-  .on("postgres_changes", {
-   event:"INSERT",
-   schema:"public",
-   table:"chat_messages",
-   filter:"room_id=eq." + room.id
-  }, payload => {
-   addMessage(payload.new);
-  })
-  .on("postgres_changes", {
-   event:"DELETE",
-   schema:"public",
-   table:"chat_messages"
-  }, payload => {
-   const element = document.getElementById("message-" + payload.old.id);
-   if (element) element.remove();
-  })
-  .subscribe(status => {
-   $("status").textContent =
-    status === "SUBSCRIBED" ? "Live" : "Connecting...";
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
   });
 }
 
+function setConnectionStatus(message) {
+  connectionStatus.textContent = message;
+}
+
+function showModal(title, content) {
+  modalTitle.textContent = title;
+  modalContent.replaceChildren();
+  modalContent.appendChild(content);
+  reportPanel.style.display = "flex";
+}
+
+function closeModal() {
+  reportPanel.style.display = "none";
+  modalContent.replaceChildren();
+}
+
+
+/* SIGN UP */
+
+async function signUp() {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  showAuthMessage("");
+
+  if (!validUsername(username)) {
+    showAuthMessage("Username must be 3–20 characters and use only letters, numbers or underscores.");
+    return;
+  }
+
+  if (password.length < 8) {
+    showAuthMessage("Your password must be at least 8 characters.");
+    return;
+  }
+
+  const button = document.getElementById("signupButton");
+  button.disabled = true;
+  button.textContent = "Creating account...";
+
+  try {
+    const { data, error } = await db.auth.signUp({
+      email: authEmail(username),
+      password: password,
+      options: {
+        data: {
+          nickname: username
+        }
+      }
+    });
+
+    if (error) throw error;
+
+    if (!data.session) {
+      showAuthMessage(
+        "Account created, but email confirmation is enabled in Supabase. Ask the project owner to turn off email confirmation before using username-only registration."
+      );
+      return;
+    }
+
+    showAuthMessage("Account created. Signing you in...");
+  } catch (error) {
+    showAuthMessage(error.message || "Could not create your account.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Create account";
+  }
+}
+
+
+/* LOG IN */
+
+async function logIn() {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  showAuthMessage("");
+
+  if (!validUsername(username)) {
+    showAuthMessage("Enter a valid username.");
+    return;
+  }
+
+  if (!password) {
+    showAuthMessage("Enter your password.");
+    return;
+  }
+
+  const button = document.getElementById("loginButton");
+  button.disabled = true;
+  button.textContent = "Logging in...";
+
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email: authEmail(username),
+      password: password
+    });
+
+    if (error) throw error;
+  } catch (error) {
+    showAuthMessage(error.message || "Login failed.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Log in";
+  }
+}
+
+
+/* START APP */
+
+async function startApp(user) {
+  currentUser = user;
+
+  currentUsername =
+    user.user_metadata?.nickname ||
+    user.email?.split("@")[0] ||
+    "Player";
+
+  document.getElementById("userLabel").textContent =
+    "Logged in as " + currentUsername;
+
+  showChat();
+  setConnectionStatus("Loading...");
+
+  try {
+    const { data, error } = await db.rpc("is_chat_admin");
+
+    if (error) throw error;
+
+    isAdmin = data === true;
+
+    document.getElementById("adminTools").style.display =
+      isAdmin ? "block" : "none";
+
+    await loadRooms();
+
+    if (rooms.length > 0) {
+      await selectRoom(rooms[0]);
+    } else {
+      roomsElement.textContent = "No rooms available.";
+      messagesElement.textContent = "No chat rooms have been created.";
+      setConnectionStatus("No rooms");
+    }
+  } catch (error) {
+    console.error(error);
+    setConnectionStatus("Connection error");
+    messagesElement.textContent =
+      "Could not load the chat. Check your Supabase tables and permissions.";
+  }
+}
+
+
+/* LOAD ROOMS */
+
+async function loadRooms() {
+  const { data, error } = await db
+    .from("chat_rooms")
+    .select("id, name, created_at")
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  rooms = data || [];
+  renderRooms();
+}
+
+function renderRooms() {
+  roomsElement.replaceChildren();
+
+  rooms.forEach(room => {
+    const button = document.createElement("button");
+
+    button.className = "room-button";
+    button.textContent = "# " + room.name;
+
+    if (currentRoom && currentRoom.id === room.id) {
+      button.classList.add("active");
+    }
+
+    button.addEventListener("click", () => {
+      selectRoom(room);
+    });
+
+    roomsElement.appendChild(button);
+  });
+}
+
+
+/* SELECT ROOM */
+
+async function selectRoom(room) {
+  currentRoom = room;
+
+  roomTitle.textContent = room.name;
+  renderRooms();
+
+  messagesElement.replaceChildren();
+
+  const loading = document.createElement("div");
+  loading.className = "notice";
+  loading.textContent = "Loading messages...";
+  messagesElement.appendChild(loading);
+
+  if (realtimeChannel) {
+    await db.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+
+  await loadMessages();
+  subscribeToMessages(room.id);
+}
+
+
+/* LOAD MESSAGES */
+
 async function loadMessages() {
- const {data, error} = await db
-  .from("chat_messages")
-  .select("*")
-  .eq("room_id", currentRoom.id)
-  .order("created_at", {ascending:false})
-  .limit(100);
+  if (!currentRoom) return;
 
- if (error) {
-  showNotice("Couldn't load messages: " + error.message);
-  return;
- }
+  loadingMessages = true;
 
- $("messages").replaceChildren();
+  const { data, error } = await db
+    .from("chat_messages")
+    .select("id, room_id, user_id, nickname, message, created_at")
+    .eq("room_id", currentRoom.id)
+    .order("created_at", { ascending: true })
+    .limit(100);
 
- const messages = (data || []).reverse();
+  loadingMessages = false;
 
- if (!messages.length) {
-  const empty = document.createElement("div");
-  empty.className = "empty";
-  empty.textContent = "No messages yet. Start the conversation!";
-  $("messages").appendChild(empty);
-  return;
- }
+  if (error) {
+    console.error(error);
+    messagesElement.textContent = "Could not load messages.";
+    return;
+  }
 
- messages.forEach(addMessage);
- scrollToBottom();
+  currentMessages = data || [];
+  renderMessages();
 }
 
-function addMessage(message) {
- if (!message || document.getElementById("message-" + message.id)) return;
- if (message.room_id !== currentRoom?.id) return;
 
- const empty = $("messages").querySelector(".empty");
- if (empty) empty.remove();
+/* RENDER MESSAGES */
 
- const mine = message.user_id === currentUser.id;
- const wrapper = document.createElement("div");
- wrapper.className = "message" + (mine ? " mine" : "");
- wrapper.id = "message-" + message.id;
+function renderMessages() {
+  messagesElement.replaceChildren();
 
- const top = document.createElement("div");
- top.className = "msg-top";
+  if (currentMessages.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "notice";
+    empty.textContent = "No messages yet. Start the conversation!";
+    messagesElement.appendChild(empty);
+    return;
+  }
 
- const name = document.createElement("span");
- name.className = "msg-name";
- name.textContent = message.nickname || "Player";
+  currentMessages.forEach(message => {
+    const card = document.createElement("div");
+    card.className = "message";
 
- const time = document.createElement("span");
- time.className = "msg-time";
- time.textContent = formatTime(message.created_at);
+    const header = document.createElement("div");
+    header.className = "message-header";
 
- top.append(name, time);
+    const name = document.createElement("span");
+    name.className = "message-name";
+    name.textContent = message.nickname || "Player";
 
- const text = document.createElement("div");
- text.className = "msg-text";
- text.textContent = message.message;
+    const time = document.createElement("span");
+    time.className = "message-time";
+    time.textContent = formatTime(message.created_at);
 
- wrapper.append(top, text);
+    header.append(name, time);
 
- const actions = document.createElement("div");
- actions.className = "msg-actions";
+    const text = document.createElement("div");
+    text.className = "message-text";
+    text.textContent = message.message;
 
- if (!mine) {
-  const report = document.createElement("button");
-  report.textContent = "Report";
-  report.addEventListener("click", () => reportMessage(message));
-  actions.appendChild(report);
- }
+    card.append(header, text);
 
- if (isAdmin) {
-  const del = document.createElement("button");
-  del.textContent = "Delete";
-  del.className = "delete";
-  del.addEventListener("click", () => deleteMessage(message));
-  actions.appendChild(del);
- }
+    const actions = document.createElement("div");
+    actions.className = "message-actions";
 
- if (actions.children.length) wrapper.appendChild(actions);
+    if (message.user_id !== currentUser.id) {
+      const reportButton = document.createElement("button");
+      reportButton.textContent = "Report";
+      reportButton.addEventListener("click", () => {
+        reportMessage(message);
+      });
+      actions.appendChild(reportButton);
+    }
 
- $("messages").appendChild(wrapper);
- scrollToBottom();
+    if (isAdmin) {
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete-button";
+      deleteButton.textContent = "Delete";
+      deleteButton.addEventListener("click", () => {
+        deleteMessage(message);
+      });
+      actions.appendChild(deleteButton);
+    }
+
+    if (actions.children.length > 0) {
+      card.appendChild(actions);
+    }
+
+    messagesElement.appendChild(card);
+  });
+
+  messagesElement.scrollTop = messagesElement.scrollHeight;
 }
 
-function scrollToBottom() {
- $("messages").scrollTop = $("messages").scrollHeight;
-}
+
+/* SEND MESSAGE */
 
 async function sendMessage(event) {
- event.preventDefault();
+  event.preventDefault();
 
- const value = $("messageInput").value.trim();
- if (!value || !currentRoom) return;
+  const message = messageInput.value.trim();
 
- $("sendBtn").disabled = true;
- showNotice("");
+  if (!message || !currentRoom || !currentUser) return;
 
- const {error} = await db.from("chat_messages").insert({
-  room_id: currentRoom.id,
-  user_id: currentUser.id,
-  nickname: currentUser.user_metadata?.nickname ||
-   currentUser.email?.split("@")[0] || "Player",
-  message: value
- });
+  if (message.length > 1000) {
+    alert("Messages must be 1000 characters or fewer.");
+    return;
+  }
 
- $("sendBtn").disabled = false;
+  const sendButton = document.getElementById("sendButton");
+  sendButton.disabled = true;
 
- if (error) {
-  showNotice(error.message);
-  return;
- }
+  try {
+    const { error } = await db
+      .from("chat_messages")
+      .insert({
+        room_id: currentRoom.id,
+        user_id: currentUser.id,
+        nickname: currentUsername,
+        message: message
+      });
 
- $("messageInput").value = "";
+    if (error) throw error;
+
+    messageInput.value = "";
+  } catch (error) {
+    alert("Message could not be sent: " + error.message);
+  } finally {
+    sendButton.disabled = false;
+    messageInput.focus();
+  }
 }
+
+
+/* LIVE MESSAGES */
+
+function subscribeToMessages(roomId) {
+  realtimeChannel = db
+    .channel("chat-room-" + roomId)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "chat_messages",
+        filter: "room_id=eq." + roomId
+      },
+      async () => {
+        if (!loadingMessages && currentRoom?.id === roomId) {
+          await loadMessages();
+        }
+      }
+    )
+    .subscribe(status => {
+      if (status === "SUBSCRIBED") {
+        setConnectionStatus("Live");
+      } else if (status === "CHANNEL_ERROR") {
+        setConnectionStatus("Connection problem");
+      } else if (status === "CLOSED") {
+        setConnectionStatus("Disconnected");
+      }
+    });
+}
+
+
+/* REPORT MESSAGE */
 
 async function reportMessage(message) {
- const reason = prompt("Why are you reporting this message?");
- if (!reason || !reason.trim()) return;
+  const reason = prompt(
+    "Why are you reporting this message? Please explain briefly."
+  );
 
- const {error} = await db.from("chat_reports").insert({
-  message_id: message.id,
-  reporter_id: currentUser.id,
-  reason: reason.trim().slice(0,250)
- });
+  if (!reason || !reason.trim()) return;
 
- if (error) {
-  showNotice("Couldn't send report: " + error.message);
- } else {
-  showNotice("Report sent to the chat owner.");
- }
+  try {
+    const { error } = await db
+      .from("chat_reports")
+      .insert({
+        message_id: message.id,
+        reporter_id: currentUser.id,
+        reason: reason.trim()
+      });
+
+    if (error) throw error;
+
+    alert("Report submitted. Thank you.");
+  } catch (error) {
+    alert("Could not submit report: " + error.message);
+  }
 }
+
+
+/* ADMIN: DELETE MESSAGE */
 
 async function deleteMessage(message) {
- if (!confirm("Delete this message?")) return;
+  if (!isAdmin) return;
 
- const {error} = await db.from("chat_messages")
-  .delete()
-  .eq("id", message.id);
+  if (!confirm("Delete this message?")) return;
 
- if (error) showNotice("Couldn't delete message: " + error.message);
+  try {
+    const { error } = await db
+      .from("chat_messages")
+      .delete()
+      .eq("id", message.id);
+
+    if (error) throw error;
+
+    await loadMessages();
+  } catch (error) {
+    alert("Could not delete message: " + error.message);
+  }
 }
 
-function openRoomModal() {
- $("newRoomName").value = "";
- $("roomError").textContent = "";
- $("roomModal").style.display = "flex";
-}
+
+/* ADMIN: CREATE ROOM */
 
 async function createRoom() {
- if (!isAdmin) return;
+  if (!isAdmin) return;
 
- const name = $("newRoomName").value.trim();
- if (name.length < 2 || name.length > 30) {
-  $("roomError").textContent = "Room names must be 2–30 characters.";
-  return;
- }
+  const name = prompt("Enter the new room name:");
 
- $("confirmRoom").disabled = true;
+  if (!name || !name.trim()) return;
 
- const {error} = await db.from("chat_rooms").insert({name});
+  const cleanName = name.trim();
 
- $("confirmRoom").disabled = false;
+  if (cleanName.length > 30) {
+    alert("Room names must be 30 characters or fewer.");
+    return;
+  }
 
- if (error) {
-  $("roomError").textContent = error.message;
-  return;
- }
+  try {
+    const { error } = await db
+      .from("chat_rooms")
+      .insert({ name: cleanName });
 
- $("roomModal").style.display = "none";
- await loadRooms();
+    if (error) throw error;
+
+    await loadRooms();
+    alert("Room created.");
+  } catch (error) {
+    alert("Could not create room: " + error.message);
+  }
 }
 
-$("loginBtn").addEventListener("click", logIn);
-$("signupBtn").addEventListener("click", signUp);
-$("logoutBtn").addEventListener("click", logOut);
-$("messageForm").addEventListener("submit", sendMessage);
-$("addRoom").addEventListener("click", openRoomModal);
-$("cancelRoom").addEventListener("click", () => {
- $("roomModal").style.display = "none";
-});
-$("confirmRoom").addEventListener("click", createRoom);
 
-$("password").addEventListener("keydown", event => {
- if (event.key === "Enter") logIn();
+/* ADMIN: VIEW REPORTS */
+
+async function viewReports() {
+  if (!isAdmin) return;
+
+  modalTitle.textContent = "Chat Reports";
+  modalContent.textContent = "Loading reports...";
+  reportPanel.style.display = "flex";
+
+  try {
+    const { data, error } = await db
+      .from("chat_reports")
+      .select("id, message_id, reporter_id, reason, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    modalContent.replaceChildren();
+
+    if (!data || data.length === 0) {
+      modalContent.textContent = "There are no reports.";
+      return;
+    }
+
+    data.forEach(report => {
+      const item = document.createElement("div");
+      item.className = "report-item";
+
+      const reason = document.createElement("div");
+      reason.textContent = "Reason: " + report.reason;
+
+      const details = document.createElement("small");
+      details.textContent =
+        "Report ID: " + report.id +
+        " | Message ID: " + report.message_id +
+        " | Reporter: " + report.reporter_id;
+
+      item.append(reason, details);
+      modalContent.appendChild(item);
+    });
+
+  } catch (error) {
+    modalContent.textContent =
+      "Could not load reports: " + error.message;
+  }
+}
+
+
+/* LOG OUT */
+
+async function logOut() {
+  if (realtimeChannel) {
+    await db.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+
+  await db.auth.signOut();
+
+  currentUser = null;
+  currentRoom = null;
+  currentUsername = "";
+  isAdmin = false;
+  rooms = [];
+  currentMessages = [];
+
+  showLogin();
+}
+
+
+/* BUTTON EVENTS */
+
+document.getElementById("signupButton")
+  .addEventListener("click", signUp);
+
+document.getElementById("loginButton")
+  .addEventListener("click", logIn);
+
+document.getElementById("messageForm")
+  .addEventListener("submit", sendMessage);
+
+document.getElementById("logoutButton")
+  .addEventListener("click", logOut);
+
+document.getElementById("createRoomButton")
+  .addEventListener("click", createRoom);
+
+document.getElementById("reportsButton")
+  .addEventListener("click", viewReports);
+
+document.getElementById("closeModalButton")
+  .addEventListener("click", closeModal);
+
+reportPanel.addEventListener("click", event => {
+  if (event.target === reportPanel) {
+    closeModal();
+  }
 });
 
-$("messageInput").addEventListener("keydown", event => {
- if (event.key === "Enter" && !event.shiftKey) {
-  event.preventDefault();
-  $("messageForm").requestSubmit();
- }
+
+/* CHECK EXISTING LOGIN */
+
+async function initialise() {
+  if (!window.supabase) {
+    showAuthMessage("Supabase library could not load. Check your internet connection.");
+    return;
+  }
+
+  try {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) throw error;
+
+    if (data.session?.user) {
+      await startApp(data.session.user);
+    }
+  } catch (error) {
+    console.error(error);
+    showAuthMessage("Could not connect to Supabase: " + error.message);
+  }
+}
+
+
+/* AUTH STATE CHANGES */
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_IN" && session?.user) {
+    startApp(session.user);
+  }
+
+  if (event === "SIGNED_OUT") {
+    currentUser = null;
+    showLogin();
+  }
 });
 
-(async function initialise() {
- const {data} = await db.auth.getSession();
- if (data.session) {
-  await startApp(data.session.user);
- }
-})();
+initialise();
+
 </script>
 </body>
 </html>
