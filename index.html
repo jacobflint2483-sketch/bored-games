@@ -5,24 +5,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculator</title>
-
+<link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='85'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E">
 <style>
+:root{
+ --bg:#090b12;
+ --panel:#151a27;
+ --card:#161c2b;
+ --accent:#7557ff;
+ --accent2:#927dff;
+ --text:#ffffff;
+ --muted:#9aa5bc;
+ --border:#30364a;
+}
 *{box-sizing:border-box}
 body{
- margin:0;background:#090b12;color:#fff;
- font-family:Arial,sans-serif;min-height:100vh
+ margin:0;background:var(--bg);color:var(--text);
+ font-family:Arial,sans-serif;min-height:100vh;
 }
-button,input{font:inherit}
+button,input,select{font:inherit}
 button{
  border:0;border-radius:10px;padding:12px 17px;
- background:#7557ff;color:white;font-weight:bold;
- cursor:pointer
+ background:var(--accent);color:white;font-weight:bold;
+ cursor:pointer;transition:filter .15s;
 }
 button:hover{filter:brightness(1.15)}
-input{
- background:#171c2a;color:white;border:1px solid #30374b;
- padding:12px;border-radius:10px;outline:none
+input,select{
+ background:#171c2a;color:white;border:1px solid var(--border);
+ padding:12px;border-radius:10px;outline:none;max-width:100%;
 }
+input:focus,select:focus{border-color:var(--accent2)}
 .page{display:none;min-height:100vh}
 .page.active{display:block}
 .center{
@@ -33,93 +44,126 @@ input{
 /* CALCULATOR */
 .calculator{
  width:340px;max-width:100%;padding:23px;
- background:#151a27;border:1px solid #30364a;
+ background:var(--panel);border:1px solid var(--border);
  border-radius:22px;box-shadow:0 20px 70px #0009
 }
 .display{
  background:#090d16;border-radius:12px;
  padding:20px;text-align:right;font-size:34px;
- min-height:82px;margin-bottom:15px;overflow:hidden
+ min-height:82px;margin-bottom:15px;overflow:hidden;
+ word-break:break-all
 }
 .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.keys button{
- min-height:58px;font-size:20px;background:#293147
-}
-.keys .operator{background:#7055ff}
+.keys button{min-height:58px;font-size:20px;background:#293147}
+.keys .operator{background:var(--accent)}
 .keys .special{background:#414a60}
 .keys .equals{background:#13a87c}
 
 /* ARCADE */
 header{
  display:flex;align-items:center;justify-content:space-between;
- flex-wrap:wrap;gap:15px;padding:22px 5%;
+ flex-wrap:wrap;gap:15px;padding:20px 5%;
  border-bottom:1px solid #282e40
 }
-.brand{font-size:23px;font-weight:900;letter-spacing:3px}
+.brand{font-size:23px;font-weight:900;letter-spacing:3px;display:flex;align-items:center;gap:9px}
+.brand img{width:35px;height:35px;object-fit:contain;border-radius:7px}
+.headerButtons{display:flex;gap:8px;flex-wrap:wrap}
 .container{max-width:1200px;margin:auto;padding:30px 22px}
 .hero{
  padding:35px;border-radius:19px;
- background:linear-gradient(120deg,#292154,#121b2b);
+ background:linear-gradient(120deg,var(--accent),#121b2b);
  margin-bottom:28px
 }
 .hero h1{font-size:38px;margin:8px 0}
-.muted{color:#9aa5bc}
-.toolbar{
- display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 25px
-}
+.muted{color:#c0c8da}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 25px}
 .toolbar input{flex:1;min-width:180px}
 .secondary{background:#30394f}
 .grid{
- display:grid;
- grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
  gap:17px
 }
 .card{
- background:#161c2b;border:1px solid #2c3449;
+ background:var(--card);border:1px solid #2c3449;
  border-radius:16px;padding:20px;min-height:185px;
  display:flex;flex-direction:column;justify-content:space-between;
  transition:transform .2s,border-color .2s
 }
-.card:hover{transform:translateY(-4px);border-color:#7661e8}
+.card:hover{transform:translateY(-4px);border-color:var(--accent2)}
 .game-icon{
  height:75px;border-radius:11px;
- background:linear-gradient(135deg,#33266d,#182d48);
- display:grid;place-items:center;font-size:34px;
- margin-bottom:15px
+ background:linear-gradient(135deg,var(--accent),#182d48);
+ display:grid;place-items:center;font-size:34px;margin-bottom:15px
 }
 .card h3{margin:0 0 8px;font-size:19px}
-.card p{margin:0;color:#9aa5bc;font-size:13px;word-break:break-word}
+.card p{margin:0;color:var(--muted);font-size:13px;word-break:break-word}
 .card button{margin-top:17px}
-.status{font-size:13px;color:#9aa5bc;margin:15px 0}
+.status{font-size:13px;color:var(--muted);margin:15px 0}
 .empty{
  text-align:center;padding:55px 20px;
- background:#151a27;border-radius:16px;color:#aab3c5
+ background:var(--panel);border-radius:16px;color:#aab3c5
 }
 footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 
 /* GAME PLAYER */
 .gamebar{
  display:flex;align-items:center;gap:14px;
- padding:12px 18px;background:#121725;
- min-height:65px
+ padding:12px 18px;background:#121725;min-height:65px
 }
 #playingTitle{flex:1;font-weight:bold}
-#gameFrame{
- width:100%;height:calc(100vh - 65px);
- border:0;background:#080a10
+#gameFrame{width:100%;height:calc(100vh - 65px);border:0;background:#080a10}
+
+/* SETTINGS */
+.settingsContainer{max-width:850px;margin:auto;padding:28px 20px}
+.settingsHeading{margin-bottom:25px}
+.settingsHeading h1{margin-bottom:5px}
+.settingCard{
+ background:var(--panel);border:1px solid var(--border);
+ border-radius:15px;padding:20px;margin-bottom:15px
 }
+.settingCard h3{margin:0 0 8px}
+.settingCard p{color:var(--muted);font-size:13px;line-height:1.5}
+.settingRow{
+ display:flex;justify-content:space-between;align-items:center;
+ gap:15px;flex-wrap:wrap;margin-top:15px
+}
+.settingRow label{font-weight:bold;font-size:14px}
+.settingRow input[type="text"]{width:min(100%,300px)}
+.settingRow select{width:min(100%,300px)}
+.settingRow input[type="color"]{width:65px;height:43px;padding:3px}
+.logoPreview{
+ width:55px;height:55px;object-fit:contain;
+ border-radius:10px;background:#252d40;padding:5px
+}
+.logoControls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.note{font-size:12px;color:#aab3c5;line-height:1.5}
+.toggle{
+ width:48px;height:26px;background:#4a5364;border-radius:20px;
+ position:relative;cursor:pointer;display:inline-block;flex-shrink:0
+}
+.toggle::after{
+ content:"";position:absolute;width:20px;height:20px;
+ background:white;border-radius:50%;top:3px;left:3px;transition:.2s
+}
+.toggle.on{background:#25a66d}
+.toggle.on::after{left:25px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.danger{background:#a73d4b}
+.success{color:#83e5a3;font-size:13px;min-height:18px;margin-top:10px}
+
 @media(max-width:500px){
  .hero h1{font-size:29px}
  .calculator{padding:17px}
  .keys{gap:7px}
  .keys button{min-height:55px}
+ .settingRow{align-items:flex-start;flex-direction:column}
+ .settingRow input[type="text"],.settingRow select{width:100%}
 }
 </style>
 </head>
-
 <body>
 
-<!-- HOME: CALCULATOR ONLY -->
+<!-- CALCULATOR -->
 <section id="home" class="page active">
  <div class="center">
   <div class="calculator">
@@ -129,22 +173,18 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
     <button class="special" onclick="backspace()">DEL</button>
     <button class="special" onclick="append('(')">(</button>
     <button class="operator" onclick="append('/')">÷</button>
-
     <button onclick="append('7')">7</button>
     <button onclick="append('8')">8</button>
     <button onclick="append('9')">9</button>
     <button class="operator" onclick="append('*')">×</button>
-
     <button onclick="append('4')">4</button>
     <button onclick="append('5')">5</button>
     <button onclick="append('6')">6</button>
     <button class="operator" onclick="append('-')">−</button>
-
     <button onclick="append('1')">1</button>
     <button onclick="append('2')">2</button>
     <button onclick="append('3')">3</button>
     <button class="operator" onclick="append('+')">+</button>
-
     <button onclick="append('0')">0</button>
     <button onclick="append('.')">.</button>
     <button class="special" onclick="append(')')">)</button>
@@ -157,27 +197,113 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 <!-- ARCADE -->
 <section id="arcade" class="page">
  <header>
-  <div class="brand">BORED<span style="color:#927dff"> GAMES</span></div>
-  <button class="secondary" onclick="showPage('home')">Exit</button>
+  <div class="brand">
+   <img id="brandLogo" alt="" style="display:none">
+   <span id="brandName">BORED<span style="color:var(--accent2)"> GAMES</span></span>
+  </div>
+  <div class="headerButtons">
+   <button class="secondary" onclick="showPage('settings')">⚙ Settings</button>
+   <button class="secondary" onclick="showPage('home')">Calculator</button>
+  </div>
  </header>
-
  <main class="container">
   <div class="hero">
    <p class="muted">YOUR PERSONAL GAME COLLECTION</p>
-   <h1>Welcome to the arcade.</h1>
+   <h1 id="welcomeTitle">Welcome to the arcade.</h1>
    <p class="muted">Pick a game and start playing.</p>
   </div>
-
   <div class="toolbar">
    <input id="search" placeholder="Search games..." oninput="renderGames()">
    <button onclick="loadGames()">↻ Refresh games</button>
    <button class="secondary" onclick="openGitHub()">Manage games</button>
   </div>
-
   <div id="status" class="status">Loading your games...</div>
   <div id="gameGrid" class="grid"></div>
+  <footer id="footerName">BORED GAMES · GAME LIBRARY</footer>
+ </main>
+</section>
 
-  <footer>BORED GAMES · GAME LIBRARY</footer>
+<!-- SETTINGS -->
+<section id="settings" class="page">
+ <header>
+  <div class="brand">⚙ WEBSITE SETTINGS</div>
+  <button class="secondary" onclick="showPage('arcade')">← Back to arcade</button>
+ </header>
+ <main class="settingsContainer">
+  <div class="settingsHeading">
+   <h1>Customise your arcade</h1>
+   <p class="muted">Change how your website looks and behaves.</p>
+  </div>
+
+  <div class="settingCard">
+   <h3>Website name</h3>
+   <p>Change the name displayed at the top of your arcade.</p>
+   <div class="settingRow">
+    <label for="siteName">Arcade name</label>
+    <input id="siteName" type="text" maxlength="35" placeholder="Bored Games">
+   </div>
+  </div>
+
+  <div class="settingCard">
+   <h3>Browser tab</h3>
+   <p>Customise the title shown in the browser tab.</p>
+   <div class="settingRow">
+    <label for="tabTitle">Tab title</label>
+    <input id="tabTitle" type="text" maxlength="50" placeholder="Calculator">
+   </div>
+   <div class="settingRow">
+    <label for="tabIconFile">Upload tab logo</label>
+    <div class="logoControls">
+     <img id="logoPreview" class="logoPreview" alt="Logo preview">
+     <input id="tabIconFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon">
+    </div>
+   </div>
+   <div class="settingRow">
+    <label>Remove custom logo</label>
+    <button class="secondary" onclick="removeLogo()">Reset logo</button>
+   </div>
+  </div>
+
+  <div class="settingCard">
+   <h3>Appearance</h3>
+   <p>Choose a colour theme or make your own accent colour.</p>
+   <div class="settingRow">
+    <label for="theme">Colour theme</label>
+    <select id="theme">
+     <option value="dark">Dark purple</option>
+     <option value="blue">Ocean blue</option>
+     <option value="green">Forest green</option>
+     <option value="red">Crimson red</option>
+     <option value="light">Light mode</option>
+     <option value="custom">Custom accent</option>
+    </select>
+   </div>
+   <div class="settingRow" id="customColorRow">
+    <label for="customColor">Custom accent colour</label>
+    <input id="customColor" type="color" value="#7557ff">
+   </div>
+  </div>
+
+  <div class="settingCard">
+   <h3>Quick calculator</h3>
+   <p>Enable a button in the arcade header that switches straight to your calculator. Entering 2483 returns to the arcade.</p>
+   <div class="settingRow">
+    <label for="quickCalc">Show calculator button</label>
+    <span id="quickCalcToggle" class="toggle on" role="switch" aria-checked="true" tabindex="0" onclick="toggleQuickCalc()"></span>
+   </div>
+  </div>
+
+  <div class="settingCard">
+   <h3>Save your changes</h3>
+   <p>Your settings are saved in this browser. They will stay on this device when you refresh the page.</p>
+   <div class="actions">
+    <button onclick="saveSettings()">Save settings</button>
+    <button class="secondary" onclick="previewSettings()">Preview</button>
+    <button class="danger" onclick="resetSettings()">Reset all</button>
+   </div>
+   <div class="success" id="saveMessage"></div>
+  </div>
+  <p class="note">Note: These settings are stored in this browser, not in GitHub. Other devices and browsers will have their own settings. The browser address/URL itself cannot be changed by a website.</p>
  </main>
 </section>
 
@@ -188,235 +314,286 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
   <span id="playingTitle">Game</span>
   <button onclick="fullscreenGame()">Fullscreen</button>
  </div>
- <iframe id="gameFrame" allow="fullscreen; autoplay; gamepad; pointer-lock"
- allowfullscreen></iframe>
+ <iframe id="gameFrame" allow="fullscreen; autoplay; gamepad; pointer-lock" allowfullscreen></iframe>
 </section>
 
 <script>
-const USERNAME = "jacobflint2483-sketch";
-const REPOSITORY = "bored-games";
-const GAME_FOLDER = "games";
+const USERNAME="jacobflint2483-sketch";
+const REPOSITORY="bored-games";
+const GAME_FOLDER="games";
+const API_URL=`https://api.github.com/repos/${USERNAME}/${REPOSITORY}/contents/${GAME_FOLDER}`;
+const PAGES_URL=`https://${USERNAME}.github.io/${REPOSITORY}/${GAME_FOLDER}/`;
 
-const API_URL =
- `https://api.github.com/repos/${USERNAME}/${REPOSITORY}/contents/${GAME_FOLDER}`;
+const $=id=>document.getElementById(id);
+let expression="";
+let games=[];
+let currentGame=null;
+let customLogo="";
+let quickCalc=true;
 
-const PAGES_URL =
- `https://${USERNAME}.github.io/${REPOSITORY}/${GAME_FOLDER}/`;
+const defaults={
+ siteName:"Bored Games",
+ tabTitle:"Calculator",
+ theme:"dark",
+ customColor:"#7557ff",
+ quickCalc:true
+};
 
-let expression = "";
-let games = [];
-let currentGame = null;
-
-const $ = id => document.getElementById(id);
+const themes={
+ dark:{bg:"#090b12",panel:"#151a27",card:"#161c2b",accent:"#7557ff",accent2:"#927dff",text:"#ffffff",muted:"#9aa5bc",border:"#30364a"},
+ blue:{bg:"#07121e",panel:"#102235",card:"#142a40",accent:"#168ed4",accent2:"#67c7ff",text:"#ffffff",muted:"#a6c6df",border:"#28445e"},
+ green:{bg:"#09160f",panel:"#14261b",card:"#192f22",accent:"#268d51",accent2:"#78dc9b",text:"#ffffff",muted:"#a4c5ac",border:"#304d38"},
+ red:{bg:"#180c12",panel:"#29151d",card:"#321923",accent:"#c34158",accent2:"#ff8296",text:"#ffffff",muted:"#d0a7b0",border:"#54303a"},
+ light:{bg:"#edf0f6",panel:"#ffffff",card:"#ffffff",accent:"#7055db",accent2:"#6246d0",text:"#182033",muted:"#59657a",border:"#d2d8e5"},
+ custom:{bg:"#090b12",panel:"#151a27",card:"#161c2b",accent:"#7557ff",accent2:"#927dff",text:"#ffffff",muted:"#9aa5bc",border:"#30364a"}
+};
 
 function showPage(id){
- document.querySelectorAll(".page").forEach(page=>{
-  page.classList.remove("active");
- });
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  $(id).classList.add("active");
+ if(id==="settings")loadSettingsIntoForm();
 }
 
-function updateDisplay(){
- $("display").textContent=expression || "0";
-}
-
+function updateDisplay(){ $("display").textContent=expression||"0"; }
 function append(value){
  if(expression.length>=40)return;
- expression+=value;
- updateDisplay();
-
- // Secret entry
+ expression+=value;updateDisplay();
  if(expression==="2483"){
-  expression="";
-  updateDisplay();
-  loadGames();
-  showPage("arcade");
+  expression="";updateDisplay();
+  loadGames();showPage("arcade");
  }
 }
-
-function clearCalc(){
- expression="";
- updateDisplay();
-}
-
-function backspace(){
- expression=expression.slice(0,-1);
- updateDisplay();
-}
-
+function clearCalc(){expression="";updateDisplay()}
+function backspace(){expression=expression.slice(0,-1);updateDisplay()}
 function calculate(){
  try{
   if(!expression)return;
   if(!/^[0-9+\-*/(). ]+$/.test(expression))throw Error();
-
   const result=Function('"use strict";return ('+expression+')')();
-
   if(!Number.isFinite(result))throw Error();
-
-  expression=String(Number(result.toFixed(10)));
-  updateDisplay();
+  expression=String(Number(result.toFixed(10)));updateDisplay();
  }catch{
-  $("display").textContent="Error";
-  expression="";
+  $("display").textContent="Error";expression="";
  }
 }
-
 document.addEventListener("keydown",event=>{
  if(!$("home").classList.contains("active"))return;
-
- if(/^[0-9]$/.test(event.key)){
-  append(event.key);
- }else if(["+","-","*","/","."].includes(event.key)){
-  append(event.key);
- }else if(event.key==="Enter"){
-  calculate();
- }else if(event.key==="Backspace"){
-  backspace();
- }else if(event.key==="Escape"){
-  clearCalc();
- }
+ if(/^[0-9]$/.test(event.key))append(event.key);
+ else if(["+","-","*","/","."].includes(event.key))append(event.key);
+ else if(event.key==="Enter")calculate();
+ else if(event.key==="Backspace")backspace();
+ else if(event.key==="Escape")clearCalc();
 });
 
-// Turn a filename into a nice title
+// SETTINGS
+function readSettings(){
+ try{
+  return {...defaults,...JSON.parse(localStorage.getItem("boredGamesSettings")||"{}")};
+ }catch{return {...defaults}}
+}
+function saveSettingsData(data){
+ try{localStorage.setItem("boredGamesSettings",JSON.stringify(data))}
+ catch{alert("Couldn't save settings. Your uploaded logo may be too large. Try a smaller image.")}
+}
+function applyTheme(theme,custom){
+ let palette={...(themes[theme]||themes.dark)};
+ if(theme==="custom"){
+  palette.accent=custom||defaults.customColor;
+  palette.accent2=palette.accent;
+ }
+ for(const [key,value] of Object.entries(palette)){
+  document.documentElement.style.setProperty("--"+key,value);
+ }
+}
+function applySettings(){
+ const s=readSettings();
+ applyTheme(s.theme,s.customColor);
+ document.title=s.tabTitle||"Calculator";
+ $("brandName").textContent=s.siteName.toUpperCase();
+ $("welcomeTitle").textContent="Welcome to "+s.siteName+".";
+ $("footerName").textContent=s.siteName.toUpperCase()+" · GAME LIBRARY";
+ $("quickCalcToggle").classList.toggle("on",s.quickCalc!==false);
+ $("quickCalcToggle").setAttribute("aria-checked",String(s.quickCalc!==false));
+ quickCalc=s.quickCalc!==false;
+ $("brandLogo").style.display=customLogo?"block":"none";
+ if(customLogo)$("brandLogo").src=customLogo;
+ $("favicon").href=customLogo||defaultFavicon;
+ $("quickCalcButton")?.remove();
+ if(quickCalc){
+  const btn=document.createElement("button");
+  btn.id="quickCalcButton";btn.className="secondary";
+  btn.textContent="Calculator";
+  btn.onclick=()=>{clearCalc();showPage("home")};
+  $("arcade").querySelector(".headerButtons").prepend(btn);
+ }
+}
+const defaultFavicon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='85'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E";
+
+function loadSettingsIntoForm(){
+ const s=readSettings();
+ $("siteName").value=s.siteName;
+ $("tabTitle").value=s.tabTitle;
+ $("theme").value=s.theme;
+ $("customColor").value=s.customColor||"#7557ff";
+ $("logoPreview").src=customLogo||defaultFavicon;
+ $("quickCalcToggle").classList.toggle("on",s.quickCalc!==false);
+ $("quickCalcToggle").setAttribute("aria-checked",String(s.quickCalc!==false));
+ $("saveMessage").textContent="";
+}
+function toggleQuickCalc(){
+ const s=readSettings();
+ s.quickCalc=s.quickCalc===false;
+ saveSettingsData(s);
+ applySettings();
+ loadSettingsIntoForm();
+}
+$("quickCalcToggle").addEventListener("keydown",e=>{
+ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleQuickCalc()}
+});
+
+$("tabIconFile").addEventListener("change",event=>{
+ const file=event.target.files[0];
+ if(!file)return;
+ if(!file.type.startsWith("image/")){
+  alert("Please choose an image file.");return;
+ }
+ if(file.size>500000){
+  alert("Please choose a logo smaller than 500 KB.");return;
+ }
+ const reader=new FileReader();
+ reader.onload=()=>{
+  customLogo=reader.result;
+  $("logoPreview").src=customLogo;
+  $("saveMessage").textContent="Logo ready. Press Save settings to keep it.";
+ };
+ reader.readAsDataURL(file);
+});
+function removeLogo(){
+ customLogo="";
+ $("logoPreview").src=defaultFavicon;
+ $("tabIconFile").value="";
+ $("saveMessage").textContent="Logo reset. Press Save settings to keep this change.";
+}
+function getFormSettings(){
+ return {
+  siteName:$("siteName").value.trim()||"Bored Games",
+  tabTitle:$("tabTitle").value.trim()||"Calculator",
+  theme:$("theme").value,
+  customColor:$("customColor").value,
+  quickCalc:quickCalc
+ };
+}
+function saveSettings(){
+ const s=getFormSettings();
+ saveSettingsData(s);
+ try{
+  if(customLogo)localStorage.setItem("boredGamesLogo",customLogo);
+  else localStorage.removeItem("boredGamesLogo");
+ }catch{
+  alert("Logo could not be saved. Try a smaller image.");
+ }
+ applySettings();
+ $("saveMessage").textContent="Settings saved successfully!";
+}
+function previewSettings(){
+ const s=getFormSettings();
+ applyTheme(s.theme,s.customColor);
+ $("saveMessage").textContent="Preview active. Press Save settings to keep it.";
+}
+function resetSettings(){
+ if(!confirm("Reset your website settings to the defaults?"))return;
+ localStorage.removeItem("boredGamesSettings");
+ localStorage.removeItem("boredGamesLogo");
+ customLogo="";
+ applySettings();loadSettingsIntoForm();
+ $("saveMessage").textContent="Settings reset.";
+}
+$("theme").addEventListener("change",()=>{
+ const s=getFormSettings();applyTheme(s.theme,s.customColor);
+});
+$("customColor").addEventListener("input",()=>{
+ if($("theme").value==="custom")applyTheme("custom",$("customColor").value);
+});
+
+// GITHUB GAME LIBRARY
 function makeTitle(filename){
- return filename
-  .replace(/\.html?$/i,"")
-  .replace(/[-_]/g," ")
+ return filename.replace(/\.html?$/i,"").replace(/[-_]/g," ")
   .replace(/\b\w/g,char=>char.toUpperCase());
 }
-
-// Get games directly from the GitHub repository
 async function loadGames(){
  $("status").textContent="Checking GitHub for games...";
  $("gameGrid").innerHTML="";
-
  try{
   const response=await fetch(API_URL,{
-   headers:{
-    "Accept":"application/vnd.github+json"
-   },
+   headers:{"Accept":"application/vnd.github+json"},
    cache:"no-store"
   });
-
   if(response.status===404){
    games=[];
-   $("status").textContent=
-    "Your games folder hasn't been created yet. Upload your first HTML game to get started.";
-   renderGames();
-   return;
+   $("status").textContent="Your games folder hasn't been created yet. Upload your first HTML game to get started.";
+   renderGames();return;
   }
-
-  if(!response.ok){
-   throw Error("GitHub returned status "+response.status);
-  }
-
+  if(!response.ok)throw Error("GitHub returned status "+response.status);
   const files=await response.json();
-
   if(!Array.isArray(files))throw Error("Unexpected GitHub response");
-
-  games=files
-   .filter(file=>
-    file.type==="file" &&
-    /\.html?$/i.test(file.name)
-   )
+  games=files.filter(file=>file.type==="file"&&/\.html?$/i.test(file.name))
    .map(file=>({
     name:makeTitle(file.name),
     filename:file.name,
     url:PAGES_URL+encodeURIComponent(file.name),
     download:file.download_url
-   }))
-   .sort((a,b)=>a.name.localeCompare(b.name));
-
-  $("status").textContent=
-   games.length
-   ? `${games.length} game${games.length===1?"":"s"} found in your GitHub library.`
-   : "No HTML games found yet. Upload an HTML file into your games folder.";
-
+   })).sort((a,b)=>a.name.localeCompare(b.name));
+  $("status").textContent=games.length
+   ?`${games.length} game${games.length===1?"":"s"} found in your GitHub library.`
+   :"No HTML games found yet. Upload an HTML file into your games folder.";
   renderGames();
-
  }catch(error){
   console.error(error);
-  $("status").textContent=
-   "Couldn't load games. Check your internet connection or try again shortly.";
-  $("gameGrid").innerHTML=
-   '<div class="empty">Unable to contact GitHub. Try refreshing.</div>';
+  $("status").textContent="Couldn't load games. Check your internet connection or try again shortly.";
+  $("gameGrid").innerHTML='<div class="empty">Unable to contact GitHub. Try refreshing.</div>';
  }
 }
-
 function renderGames(){
- const grid=$("gameGrid");
- grid.innerHTML="";
-
+ const grid=$("gameGrid");grid.innerHTML="";
  const query=$("search").value.trim().toLowerCase();
-
- const filtered=games.filter(game=>
-  game.name.toLowerCase().includes(query) ||
-  game.filename.toLowerCase().includes(query)
- );
-
+ const filtered=games.filter(game=>game.name.toLowerCase().includes(query)||game.filename.toLowerCase().includes(query));
  if(!filtered.length){
-  grid.innerHTML=
-   '<div class="empty">No games match your search.</div>';
-  return;
+  grid.innerHTML='<div class="empty">No games match your search.</div>';return;
  }
-
  filtered.forEach(game=>{
-  const card=document.createElement("article");
-  card.className="card";
-
+  const card=document.createElement("article");card.className="card";
   const top=document.createElement("div");
-  const icon=document.createElement("div");
-  icon.className="game-icon";
-  icon.textContent="🎮";
-
-  const title=document.createElement("h3");
-  title.textContent=game.name;
-
-  const description=document.createElement("p");
-  description.textContent=game.filename;
-
+  const icon=document.createElement("div");icon.className="game-icon";icon.textContent="🎮";
+  const title=document.createElement("h3");title.textContent=game.name;
+  const description=document.createElement("p");description.textContent=game.filename;
   top.append(icon,title,description);
-
-  const play=document.createElement("button");
-  play.textContent="PLAY NOW →";
+  const play=document.createElement("button");play.textContent="PLAY NOW →";
   play.onclick=()=>playGame(game);
-
-  card.append(top,play);
-  grid.appendChild(card);
+  card.append(top,play);grid.appendChild(card);
  });
 }
-
 function playGame(game){
  currentGame=game;
  $("playingTitle").textContent=game.name;
-
- const frame=$("gameFrame");
- frame.src=game.url;
-
+ $("gameFrame").src=game.url;
  showPage("player");
 }
-
 function closeGame(){
  $("gameFrame").src="about:blank";
- currentGame=null;
- showPage("arcade");
+ currentGame=null;showPage("arcade");
 }
-
 function fullscreenGame(){
  const frame=$("gameFrame");
- if(frame.requestFullscreen){
-  frame.requestFullscreen().catch(()=>{});
- }
+ if(frame.requestFullscreen)frame.requestFullscreen().catch(()=>{});
 }
-
 function openGitHub(){
- window.open(
-  `https://github.com/${USERNAME}/${REPOSITORY}/tree/main/${GAME_FOLDER}`,
-  "_blank"
- );
+ window.open(`https://github.com/${USERNAME}/${REPOSITORY}/tree/main/${GAME_FOLDER}`,"_blank");
 }
 
+// START
+try{customLogo=localStorage.getItem("boredGamesLogo")||""}catch{customLogo=""}
 updateDisplay();
+applySettings();
 </script>
 </body>
 </html>
