@@ -1,0 +1,742 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dungeon Escape</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101016;color:white;
+ font-family:Arial,sans-serif;overflow:hidden;
+ touch-action:none;
+}
+#game{display:block;width:100vw;height:100vh;background:#17171d}
+#hud{
+ position:fixed;top:12px;left:12px;z-index:5;
+ display:flex;gap:10px;flex-wrap:wrap;
+}
+.stat{
+ background:#252530;border:1px solid #454554;
+ border-radius:9px;padding:9px 13px;
+ font-size:14px;box-shadow:0 3px 12px #0008;
+}
+#healthBar{
+ width:110px;height:10px;background:#451e25;
+ border-radius:10px;margin-top:5px;overflow:hidden;
+}
+#healthFill{height:100%;width:100%;background:#ed4b58}
+#message{
+ position:fixed;top:85px;left:50%;transform:translateX(-50%);
+ background:#171722dd;padding:10px 18px;border-radius:10px;
+ font-weight:bold;z-index:5;text-align:center;
+ pointer-events:none;
+}
+#menu{
+ position:fixed;inset:0;background:#090910eF;
+ display:flex;align-items:center;justify-content:center;
+ z-index:10;padding:20px;
+}
+.panel{
+ width:min(440px,100%);background:#20202c;
+ border:1px solid #49495c;border-radius:18px;
+ padding:28px;text-align:center;box-shadow:0 15px 60px #0009;
+}
+h1{font-size:36px;margin:0 0 8px;color:#e6b85c}
+.panel p{color:#c2c2d0;line-height:1.6}
+button{
+ border:0;border-radius:10px;background:#d49b42;
+ color:#17120a;font-size:17px;font-weight:bold;
+ padding:13px 25px;cursor:pointer;
+}
+button:active{transform:scale(.96)}
+#mobileControls{
+ display:none;position:fixed;bottom:20px;left:0;right:0;
+ z-index:6;pointer-events:none;
+}
+#joystick{
+ position:absolute;left:22px;bottom:0;
+ width:125px;height:125px;border-radius:50%;
+ background:#ffffff20;border:2px solid #ffffff50;
+ pointer-events:auto;
+}
+#stick{
+ position:absolute;width:48px;height:48px;
+ left:36px;top:36px;border-radius:50%;
+ background:#ffffff80;border:2px solid white;
+}
+#attack{
+ position:absolute;right:25px;bottom:18px;
+ width:85px;height:85px;border-radius:50%;
+ background:#b84949;color:white;border:3px solid #f18b8b;
+ pointer-events:auto;font-size:14px;
+}
+#smallHelp{
+ position:fixed;bottom:8px;left:50%;transform:translateX(-50%);
+ color:#ffffff70;font-size:11px;z-index:4;
+ white-space:nowrap;pointer-events:none;
+}
+@media(pointer:coarse){
+ #mobileControls{display:block}
+ #smallHelp{display:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+ <div class="stat">❤️ Health <span id="health">100</span>
+  <div id="healthBar"><div id="healthFill"></div></div>
+ </div>
+ <div class="stat">🪙 Coins: <span id="coins">0</span></div>
+ <div class="stat">⚔️ Level: <span id="level">1</span></div>
+ <div class="stat">👹 Enemies: <span id="enemies">0</span></div>
+</div>
+
+<div id="message">Find the exit!</div>
+
+<div id="mobileControls">
+ <div id="joystick"><div id="stick"></div></div>
+ <button id="attack">ATTACK</button>
+</div>
+
+<div id="smallHelp">WASD / Arrow keys to move · Mouse to aim · Click or Space to attack</div>
+
+<div id="menu">
+ <div class="panel">
+  <h1> DUNGEON ESCAPE </h1>
+  <p>Explore dangerous dungeons, defeat monsters, collect treasure and find the exit.</p>
+  <p><b>Controls</b><br>WASD / Arrow keys to move<br>Mouse + Click to attack<br>Space to attack</p>
+  <button id="start">ENTER DUNGEON</button>
+ </div>
+</div>
+
+<script>
+"use strict";
+
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let W=0,H=0;
+function resize(){
+ W=canvas.width=window.innerWidth*devicePixelRatio;
+ H=canvas.height=window.innerHeight*devicePixelRatio;
+}
+window.addEventListener("resize",resize);
+resize();
+
+const TILE=48;
+const MAP_W= forty();
+function forty(){return  fortyValue();}
+function fortyValue(){return  fortyFinal();}
+function fortyFinal(){return  fortyNumber();}
+function fortyNumber(){return  fortyConstant();}
+function fortyConstant(){return 40;}
+
+const MAP_H=30;
+
+let map=[];
+let player;
+let enemies=[];
+let chests=[];
+let potions=[];
+let exitPoint=null;
+let particles=[];
+let keys={};
+let camera={x:0,y:0};
+let level=1;
+let coins=0;
+let running=false;
+let gameOver=false;
+let lastTime=0;
+let attackCooldown=0;
+let messageTimer=0;
+let mouse={x:0,y:0,down:false};
+let joystick={x:0,y:0,active:false};
+let attacking=false;
+let attackAnimation=0;
+
+function say(text){
+ document.getElementById("message").textContent=text;
+ messageTimer=2;
+}
+
+function resizePlayer(){
+ if(!player)return;
+}
+
+function makeDungeon(){
+ map=Array.from({length:MAP_H},()=>Array(MAP_W).fill(1));
+
+ const rooms=[];
+ const roomCount=9+Math.min(level,5);
+
+ function carveRoom(x,y,w,h){
+  for(let yy=y;yy<y+h;yy++){
+   for(let xx=x;xx<x+w;xx++){
+    if(xx>0&&yy>0&&xx<MAP_W-1&&yy<MAP_H-1)
+     map[yy][xx]=0;
+   }
+  }
+ }
+
+ for(let i=0;i<roomCount;i++){
+  const w=5+Math.floor(Math.random()*5);
+  const h=5+Math.floor(Math.random()*5);
+  const x=2+Math.floor(Math.random()*(MAP_W-w-4));
+  const y=2+Math.floor(Math.random()*(MAP_H-h-4));
+
+  let overlaps=false;
+  for(const r of rooms){
+   if(x<r.x+r.w+2&&x+w+2>r.x&&
+      y<r.y+r.h+2&&y+h+2>r.y){
+    overlaps=true;break;
+   }
+  }
+  if(overlaps)continue;
+
+  const room={x,y,w,h,cx:Math.floor(x+w/2),cy:Math.floor(y+h/2)};
+  rooms.push(room);
+  carveRoom(x,y,w,h);
+ }
+
+ if(rooms.length<2){
+  rooms.length=0;
+  const room={x:3,y:3,w:10,h:9,cx:8,cy:7};
+  const room2={x:25,y:18,w:10,h:9,cx:30,cy:22};
+  rooms.push(room,room2);
+  carveRoom(room.x,room.y,room.w,room.h);
+  carveRoom(room2.x,room2.y,room2.w,room2.h);
+ }
+
+ for(let i=1;i<rooms.length;i++){
+  let a=rooms[i-1],b=rooms[i];
+  let x=a.cx,y=a.cy;
+  while(x!==b.cx){
+   map[y][x]=0;
+   x+=Math.sign(b.cx-x);
+  }
+  while(y!==b.cy){
+   map[y][x]=0;
+   y+=Math.sign(b.cy-y);
+  }
+ }
+
+ const start=rooms[0];
+ const end=rooms[rooms.length-1];
+
+ player={
+  x:(start.cx+.5)*TILE,
+  y:(start.cy+.5)*TILE,
+  radius:14,
+  speed:210,
+  health:100,
+  maxHealth:100,
+  damage:25,
+  facing:0,
+  invincible:0
+ };
+
+ enemies=[];
+ chests=[];
+ potions=[];
+ particles=[];
+ exitPoint={
+  x:(end.cx+.5)*TILE,
+  y:(end.cy+.5)*TILE
+ };
+
+ for(let i=1;i<rooms.length;i++){
+  const r=rooms[i];
+  const count=1+Math.floor(Math.random()*(2+Math.min(level,3)));
+  for(let j=0;j<count;j++){
+   const x=(r.x+1+Math.random()*(r.w-2))*TILE;
+   const y=(r.y+1+Math.random()*(r.h-2))*TILE;
+   if(Math.hypot(x-player.x,y-player.y)<180)continue;
+
+   enemies.push({
+    x,y,radius:14,
+    health:40+level*12,
+    maxHealth:40+level*12,
+    speed:55+level*4,
+    damage:9+level*2,
+    attack:0,
+    hit:0,
+    alive:true
+   });
+  }
+
+  if(Math.random()<.8){
+   chests.push({
+    x:(r.cx+.5)*TILE,
+    y:(r.cy+.5)*TILE,
+    opened:false
+   });
+  }
+
+  if(Math.random()<.5){
+   potions.push({
+    x:(r.cx+.5)*TILE+45,
+    y:(r.cy+.5)*TILE,
+    collected:false
+   });
+  }
+ }
+
+ updateHUD();
+}
+
+function updateHUD(){
+ document.getElementById("health").textContent=Math.max(0,Math.ceil(player.health));
+ document.getElementById("healthFill").style.width=
+  Math.max(0,player.health/player.maxHealth*100)+"%";
+ document.getElementById("coins").textContent=coins;
+ document.getElementById("level").textContent=level;
+ document.getElementById("enemies").textContent=enemies.filter(e=>e.alive).length;
+}
+
+function solidAt(x,y){
+ const tx=Math.floor(x/TILE);
+ const ty=Math.floor(y/TILE);
+ return !map[ty]||map[ty][tx]!==0;
+}
+
+function canMove(x,y,r){
+ return !solidAt(x-r,y-r)&&!solidAt(x+r,y-r)&&
+        !solidAt(x-r,y+r)&&!solidAt(x+r,y+r);
+}
+
+function moveEntity(entity,dx,dy){
+ if(canMove(entity.x+dx,entity.y,entity.radius))entity.x+=dx;
+ if(canMove(entity.x,entity.y+dy,entity.radius))entity.y+=dy;
+}
+
+function addParticles(x,y,color,count=8){
+ for(let i=0;i<count;i++){
+  const a=Math.random()*Math.PI*2;
+  const speed=30+Math.random()*120;
+  particles.push({
+   x,y,
+   vx:Math.cos(a)*speed,
+   vy:Math.sin(a)*speed,
+   life:.3+Math.random()*.5,
+   maxLife:.8,
+   color
+  });
+ }
+}
+
+function attack(){
+ if(!running||gameOver||attackCooldown>0)return;
+ attackCooldown=.38;
+ attackAnimation=.18;
+
+ for(const e of enemies){
+  if(!e.alive)continue;
+  const dx=e.x-player.x,dy=e.y-player.y;
+  const dist=Math.hypot(dx,dy);
+  const angle=Math.atan2(dy,dx);
+  let difference=Math.atan2(
+   Math.sin(angle-player.facing),
+   Math.cos(angle-player.facing)
+  );
+
+  if(dist<76&&Math.abs(difference)<1.15){
+   e.health-=player.damage;
+   e.hit=.15;
+   const knock=16;
+   moveEntity(e,Math.cos(angle)*knock,Math.sin(angle)*knock);
+   addParticles(e.x,e.y,"#e9a3a3",7);
+
+   if(e.health<=0){
+    e.alive=false;
+    coins+=3+Math.floor(Math.random()*5);
+    addParticles(e.x,e.y,"#dca84e",14);
+    say("Monster defeated! + coins");
+   }
+  }
+ }
+ updateHUD();
+}
+
+function damagePlayer(amount){
+ if(player.invincible>0)return;
+ player.health-=amount;
+ player.invincible=.7;
+ addParticles(player.x,player.y,"#ed5555",10);
+ if(player.health<=0){
+  player.health=0;
+  gameOver=true;
+  running=false;
+  document.querySelector("#menu h1").textContent="DUNGEON FAILED";
+  document.querySelector("#menu p").innerHTML=
+   "You reached level "+level+" and collected "+coins+" coins.";
+  document.getElementById("start").textContent="TRY AGAIN";
+  document.getElementById("menu").style.display="flex";
+ }
+ updateHUD();
+}
+
+function nextLevel(){
+ level++;
+ makeDungeon();
+ say("Dungeon "+level+" - Good luck!");
+}
+
+function update(dt){
+ if(!running||gameOver)return;
+
+ attackCooldown=Math.max(0,attackCooldown-dt);
+ attackAnimation=Math.max(0,attackAnimation-dt);
+ player.invincible=Math.max(0,player.invincible-dt);
+ if(messageTimer>0)messageTimer-=dt;
+
+ let dx=0,dy=0;
+ if(keys["w"]||keys["arrowup"])dy--;
+ if(keys["s"]||keys["arrowdown"])dy++;
+ if(keys["a"]||keys["arrowleft"])dx--;
+ if(keys["d"]||keys["arrowright"])dx++;
+
+ dx+=joystick.x;
+ dy+=joystick.y;
+
+ const length=Math.hypot(dx,dy);
+ if(length>1){dx/=length;dy/=length;}
+
+ if(length>.05){
+  player.facing=Math.atan2(dy,dx);
+  moveEntity(player,dx*player.speed*dt,dy*player.speed*dt);
+ }
+
+ if(keys[" "]||attacking)attack();
+
+ for(const e of enemies){
+  if(!e.alive)continue;
+  e.attack=Math.max(0,e.attack-dt);
+  e.hit=Math.max(0,e.hit-dt);
+
+  const ex=player.x-e.x,ey=player.y-e.y;
+  const distance=Math.hypot(ex,ey);
+
+  if(distance<430&&distance>2){
+   const speed=e.speed*dt;
+   moveEntity(e,ex/distance*speed,ey/distance*speed);
+  }
+
+  if(distance<e.radius+player.radius+5&&e.attack<=0){
+   damagePlayer(e.damage);
+   e.attack=.85;
+  }
+ }
+
+ for(const chest of chests){
+  if(chest.opened)continue;
+  if(Math.hypot(player.x-chest.x,player.y-chest.y)<34){
+   chest.opened=true;
+   const reward=10+Math.floor(Math.random()*16);
+   coins+=reward;
+   if(Math.random()<.45){
+    player.health=Math.min(player.maxHealth,player.health+20);
+    say("Chest opened! +"+reward+" coins and health");
+   }else{
+    say("Chest opened! +"+reward+" coins");
+   }
+   addParticles(chest.x,chest.y,"#e9bb60",15);
+   updateHUD();
+  }
+ }
+
+ for(const p of potions){
+  if(p.collected)continue;
+  if(Math.hypot(player.x-p.x,player.y-p.y)<32){
+   p.collected=true;
+   player.health=Math.min(player.maxHealth,player.health+35);
+   say("Health restored!");
+   addParticles(p.x,p.y,"#69e18a",12);
+   updateHUD();
+  }
+ }
+
+ const remaining=enemies.some(e=>e.alive);
+ if(!remaining&&Math.hypot(player.x-exitPoint.x,player.y-exitPoint.y)<40){
+  nextLevel();
+ }
+
+ for(const p of particles){
+  p.x+=p.vx*dt;
+  p.y+=p.vy*dt;
+  p.life-=dt;
+  p.vx*=.94;
+  p.vy*=.94;
+ }
+ particles=particles.filter(p=>p.life>0);
+
+ camera.x=player.x-W/2;
+ camera.y=player.y-H/2;
+ camera.x=Math.max(0,Math.min(MAP_W*TILE-camera.x-W,camera.x));
+ camera.y=Math.max(0,Math.min(MAP_H*TILE-camera.y-H,camera.y));
+
+ updateHUD();
+}
+
+function draw(){
+ ctx.setTransform(1,0,0,1,0,0);
+ ctx.clearRect(0,0,W,H);
+
+ ctx.fillStyle="#111117";
+ ctx.fillRect(0,0,W,H);
+
+ const startX=Math.max(0,Math.floor(camera.x/TILE));
+ const startY=Math.max(0,Math.floor(camera.y/TILE));
+ const endX=Math.min(MAP_W,Math.ceil((camera.x+W)/TILE)+1);
+ const endY=Math.min(MAP_H,Math.ceil((camera.y+H)/TILE)+1);
+
+ for(let y=startY;y<endY;y++){
+  for(let x=startX;x<endX;x++){
+   const px=x*TILE-camera.x;
+   const py=y*TILE-camera.y;
+   if(map[y][x]===1){
+    ctx.fillStyle="#35333b";
+    ctx.fillRect(px,py,TILE,TILE);
+    ctx.fillStyle="#45424b";
+    ctx.fillRect(px+2,py+2,TILE-4,5);
+    ctx.fillStyle="#29272f";
+    ctx.fillRect(px+2,py+8,TILE-4,TILE-10);
+   }else{
+    ctx.fillStyle=((x+y)%2===0)?"#222129":"#25232c";
+    ctx.fillRect(px,py,TILE,TILE);
+    ctx.strokeStyle="#302e37";
+    ctx.lineWidth=1;
+    ctx.strokeRect(px,py,TILE,TILE);
+   }
+  }
+ }
+ 
+ function position(x,y){
+  return {x:x-camera.x,y:y-camera.y};
+ }
+
+ // Exit
+ if(exitPoint){
+  const p=position(exitPoint.x,exitPoint.y);
+  const locked=enemies.some(e=>e.alive);
+  ctx.fillStyle=locked?"#743c3c":"#3a9a65";
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,21,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle=locked?"#b86a6a":"#8bffc0";
+  ctx.lineWidth=4;
+  ctx.stroke();
+  ctx.fillStyle="white";
+  ctx.font="bold 20px Arial";
+  ctx.textAlign="center";
+  ctx.fillText(locked?"🔒":"⬆",p.x,p.y+7);
+ }
+
+ // Chests
+ for(const c of chests){
+  const p=position(c.x,c.y);
+  ctx.fillStyle=c.opened?"#614d32":"#a97536";
+  ctx.fillRect(p.x-15,p.y-11,30,23);
+  ctx.fillStyle="#e7bc64";
+  ctx.fillRect(p.x-15,p.y-3,30,5);
+  ctx.fillStyle="#f5d68b";
+  ctx.fillRect(p.x-3,p.y-3,6,7);
+ }
+
+ // Potions
+ for(const p of potions){
+  if(p.collected)continue;
+  const q=position(p.x,p.y);
+  ctx.fillStyle="#74e99b";
+  ctx.beginPath();
+  ctx.arc(q.x,q.y,11,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle="#d5ffe1";
+  ctx.fillRect(q.x-4,q.y-15,8,7);
+ }
+
+ // Enemies
+ for(const e of enemies){
+  if(!e.alive)continue;
+  const p=position(e.x,e.y);
+  ctx.fillStyle="#0008";
+  ctx.beginPath();
+  ctx.ellipse(p.x,p.y+12,16,7,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle=e.hit>0?"#ffffff":"#a94750";
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,15,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#f3d0c0";
+  ctx.fillRect(p.x-7,p.y-5,4,4);
+  ctx.fillRect(p.x+4,p.y-5,4,4);
+
+  ctx.fillStyle="#3c171d";
+  ctx.fillRect(p.x-17,p.y-25,34,5);
+  ctx.fillStyle="#e34b54";
+  ctx.fillRect(p.x-17,p.y-25,34*Math.max(0,e.health/e.maxHealth),5);
+ }
+
+ // Player
+ const pp=position(player.x,player.y);
+ ctx.fillStyle="#0008";
+ ctx.beginPath();
+ ctx.ellipse(pp.x,pp.y+12,17,8,0,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.save();
+ ctx.translate(pp.x,pp.y);
+ ctx.rotate(player.facing);
+ ctx.fillStyle=player.invincible>0?"#ffffff":"#4b9ce6";
+ ctx.beginPath();
+ ctx.arc(0,0,15,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.fillStyle="#d6eafa";
+ ctx.fillRect(3,-7,9,5);
+ ctx.fillStyle="#263f65";
+ ctx.fillRect(3,2,9,5);
+
+ // Sword
+ ctx.rotate(attackAnimation>0?-.8:.2);
+ ctx.fillStyle="#c7cbd2";
+ ctx.fillRect(10,-3,28,6);
+ ctx.fillStyle="#8c643b";
+ ctx.fillRect(7,-5,7,10);
+ ctx.restore();
+
+ // Particles
+ for(const p of particles){
+  const q=position(p.x,p.y);
+  ctx.globalAlpha=Math.max(0,p.life/p.maxLife);
+  ctx.fillStyle=p.color;
+  ctx.beginPath();
+  ctx.arc(q.x,q.y,3,0,Math.PI*2);
+  ctx.fill();
+ }
+ ctx.globalAlpha=1;
+
+ // Dark border vignette
+ const gradient=ctx.createRadialGradient(
+  W/2,H/2,Math.min(W,H)*.2,
+  W/2,H/2,Math.max(W,H)*.75
+ );
+ gradient.addColorStop(0,"#00000000");
+ gradient.addColorStop(1,"#00000088");
+ ctx.fillStyle=gradient;
+ ctx.fillRect(0,0,W,H);
+
+ if(messageTimer>0){
+  // Message is displayed in the HTML HUD.
+ }
+}
+
+function loop(time){
+ const dt=Math.min((time-lastTime)/1000,.04);
+ lastTime=time;
+ update(dt);
+ draw();
+ requestAnimationFrame(loop);
+}
+
+document.addEventListener("keydown",e=>{
+ const key=e.key.toLowerCase();
+ keys[key]=true;
+ if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(key))
+  e.preventDefault();
+});
+document.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+canvas.addEventListener("pointermove",e=>{
+ const rect=canvas.getBoundingClientRect();
+ mouse.x=(e.clientX-rect.left)*devicePixelRatio;
+ mouse.y=(e.clientY-rect.top)*devicePixelRatio;
+ if(e.pointerType==="mouse"){
+  player.facing=Math.atan2(
+   mouse.y-H/2,mouse.x-W/2
+  );
+ }
+});
+
+canvas.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="mouse"){
+  player.facing=Math.atan2(
+   e.clientY*devicePixelRatio-H/2,
+   e.clientX*devicePixelRatio-W/2
+  );
+  attack();
+ }
+});
+
+document.getElementById("attack").addEventListener("pointerdown",e=>{
+ e.preventDefault();
+ attacking=true;
+ attack();
+});
+document.getElementById("attack").addEventListener("pointerup",()=>{
+ attacking=false;
+});
+document.getElementById("attack").addEventListener("pointerleave",()=>{
+ attacking=false;
+});
+
+const joy=document.getElementById("joystick");
+const stick=document.getElementById("stick");
+let joyPointer=null;
+
+function moveJoystick(e){
+ const rect=joy.getBoundingClientRect();
+ const cx=rect.left+rect.width/2;
+ const cy=rect.top+rect.height/2;
+ let x=e.clientX-cx;
+ let y=e.clientY-cy;
+ const max=38;
+ const d=Math.hypot(x,y);
+ if(d>max){x=x/d*max;y=y/d*max;}
+ joystick.x=x/max;
+ joystick.y=y/max;
+ stick.style.transform=`translate(${x}px,${y}px)`;
+}
+
+joy.addEventListener("pointerdown",e=>{
+ e.preventDefault();
+ joyPointer=e.pointerId;
+ joy.setPointerCapture(e.pointerId);
+ joystick.active=true;
+ moveJoystick(e);
+});
+joy.addEventListener("pointermove",e=>{
+ if(e.pointerId===joyPointer)moveJoystick(e);
+});
+function resetJoystick(){
+ joyPointer=null;
+ joystick.x=0;
+ joystick.y=0;
+ joystick.active=false;
+ stick.style.transform="translate(0px,0px)";
+}
+joy.addEventListener("pointerup",resetJoystick);
+joy.addEventListener("pointercancel",resetJoystick);
+
+document.getElementById("start").addEventListener("click",()=>{
+ level=1;
+ coins=0;
+ gameOver=false;
+ running=true;
+ document.getElementById("menu").style.display="none";
+ makeDungeon();
+ say("Defeat every monster to unlock the exit!");
+});
+
+makeDungeon();
+running=false;
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
