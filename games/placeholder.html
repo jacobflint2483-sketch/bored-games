@@ -1,6 +1,422 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#090b12;color:#fff;
+ font-family:Arial,sans-serif;min-height:100vh
+}
+button,input{font:inherit}
+button{
+ border:0;border-radius:10px;padding:12px 17px;
+ background:#7557ff;color:white;font-weight:bold;
+ cursor:pointer
+}
+button:hover{filter:brightness(1.15)}
+input{
+ background:#171c2a;color:white;border:1px solid #30374b;
+ padding:12px;border-radius:10px;outline:none
+}
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+.center{
+ min-height:100vh;display:flex;align-items:center;
+ justify-content:center;padding:20px
+}
+
+/* CALCULATOR */
+.calculator{
+ width:340px;max-width:100%;padding:23px;
+ background:#151a27;border:1px solid #30364a;
+ border-radius:22px;box-shadow:0 20px 70px #0009
+}
+.display{
+ background:#090d16;border-radius:12px;
+ padding:20px;text-align:right;font-size:34px;
+ min-height:82px;margin-bottom:15px;overflow:hidden
+}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.keys button{
+ min-height:58px;font-size:20px;background:#293147
+}
+.keys .operator{background:#7055ff}
+.keys .special{background:#414a60}
+.keys .equals{background:#13a87c}
+
+/* ARCADE */
+header{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:15px;padding:22px 5%;
+ border-bottom:1px solid #282e40
+}
+.brand{font-size:23px;font-weight:900;letter-spacing:3px}
+.container{max-width:1200px;margin:auto;padding:30px 22px}
+.hero{
+ padding:35px;border-radius:19px;
+ background:linear-gradient(120deg,#292154,#121b2b);
+ margin-bottom:28px
+}
+.hero h1{font-size:38px;margin:8px 0}
+.muted{color:#9aa5bc}
+.toolbar{
+ display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 25px
+}
+.toolbar input{flex:1;min-width:180px}
+.secondary{background:#30394f}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+ gap:17px
+}
+.card{
+ background:#161c2b;border:1px solid #2c3449;
+ border-radius:16px;padding:20px;min-height:185px;
+ display:flex;flex-direction:column;justify-content:space-between;
+ transition:transform .2s,border-color .2s
+}
+.card:hover{transform:translateY(-4px);border-color:#7661e8}
+.game-icon{
+ height:75px;border-radius:11px;
+ background:linear-gradient(135deg,#33266d,#182d48);
+ display:grid;place-items:center;font-size:34px;
+ margin-bottom:15px
+}
+.card h3{margin:0 0 8px;font-size:19px}
+.card p{margin:0;color:#9aa5bc;font-size:13px;word-break:break-word}
+.card button{margin-top:17px}
+.status{font-size:13px;color:#9aa5bc;margin:15px 0}
+.empty{
+ text-align:center;padding:55px 20px;
+ background:#151a27;border-radius:16px;color:#aab3c5
+}
+footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
+
+/* GAME PLAYER */
+.gamebar{
+ display:flex;align-items:center;gap:14px;
+ padding:12px 18px;background:#121725;
+ min-height:65px
+}
+#playingTitle{flex:1;font-weight:bold}
+#gameFrame{
+ width:100%;height:calc(100vh - 65px);
+ border:0;background:#080a10
+}
+@media(max-width:500px){
+ .hero h1{font-size:29px}
+ .calculator{padding:17px}
+ .keys{gap:7px}
+ .keys button{min-height:55px}
+}
+</style>
+</head>
+
 <body>
-<h1>My Games</h1>
+
+<!-- HOME: CALCULATOR ONLY -->
+<section id="home" class="page active">
+ <div class="center">
+  <div class="calculator">
+   <div id="display" class="display">0</div>
+   <div class="keys">
+    <button class="special" onclick="clearCalc()">AC</button>
+    <button class="special" onclick="backspace()">DEL</button>
+    <button class="special" onclick="append('(')">(</button>
+    <button class="operator" onclick="append('/')">÷</button>
+
+    <button onclick="append('7')">7</button>
+    <button onclick="append('8')">8</button>
+    <button onclick="append('9')">9</button>
+    <button class="operator" onclick="append('*')">×</button>
+
+    <button onclick="append('4')">4</button>
+    <button onclick="append('5')">5</button>
+    <button onclick="append('6')">6</button>
+    <button class="operator" onclick="append('-')">−</button>
+
+    <button onclick="append('1')">1</button>
+    <button onclick="append('2')">2</button>
+    <button onclick="append('3')">3</button>
+    <button class="operator" onclick="append('+')">+</button>
+
+    <button onclick="append('0')">0</button>
+    <button onclick="append('.')">.</button>
+    <button class="special" onclick="append(')')">)</button>
+    <button class="equals" onclick="calculate()">=</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ARCADE -->
+<section id="arcade" class="page">
+ <header>
+  <div class="brand">BORED<span style="color:#927dff"> GAMES</span></div>
+  <button class="secondary" onclick="showPage('home')">Exit</button>
+ </header>
+
+ <main class="container">
+  <div class="hero">
+   <p class="muted">YOUR PERSONAL GAME COLLECTION</p>
+   <h1>Welcome to the arcade.</h1>
+   <p class="muted">Pick a game and start playing.</p>
+  </div>
+
+  <div class="toolbar">
+   <input id="search" placeholder="Search games..." oninput="renderGames()">
+   <button onclick="loadGames()">↻ Refresh games</button>
+   <button class="secondary" onclick="openGitHub()">Manage games</button>
+  </div>
+
+  <div id="status" class="status">Loading your games...</div>
+  <div id="gameGrid" class="grid"></div>
+
+  <footer>BORED GAMES · GAME LIBRARY</footer>
+ </main>
+</section>
+
+<!-- GAME PLAYER -->
+<section id="player" class="page">
+ <div class="gamebar">
+  <button class="secondary" onclick="closeGame()">← Back</button>
+  <span id="playingTitle">Game</span>
+  <button onclick="fullscreenGame()">Fullscreen</button>
+ </div>
+ <iframe id="gameFrame" allow="fullscreen; autoplay; gamepad; pointer-lock"
+ allowfullscreen></iframe>
+</section>
+
+<script>
+const USERNAME = "jacobflint2483-sketch";
+const REPOSITORY = "bored-games";
+const GAME_FOLDER = "games";
+
+const API_URL =
+ `https://api.github.com/repos/${USERNAME}/${REPOSITORY}/contents/${GAME_FOLDER}`;
+
+const PAGES_URL =
+ `https://${USERNAME}.github.io/${REPOSITORY}/${GAME_FOLDER}/`;
+
+let expression = "";
+let games = [];
+let currentGame = null;
+
+const $ = id => document.getElementById(id);
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(page=>{
+  page.classList.remove("active");
+ });
+ $(id).classList.add("active");
+}
+
+function updateDisplay(){
+ $("display").textContent=expression || "0";
+}
+
+function append(value){
+ if(expression.length>=40)return;
+ expression+=value;
+ updateDisplay();
+
+ // Secret entry
+ if(expression==="2483"){
+  expression="";
+  updateDisplay();
+  loadGames();
+  showPage("arcade");
+ }
+}
+
+function clearCalc(){
+ expression="";
+ updateDisplay();
+}
+
+function backspace(){
+ expression=expression.slice(0,-1);
+ updateDisplay();
+}
+
+function calculate(){
+ try{
+  if(!expression)return;
+  if(!/^[0-9+\-*/(). ]+$/.test(expression))throw Error();
+
+  const result=Function('"use strict";return ('+expression+')')();
+
+  if(!Number.isFinite(result))throw Error();
+
+  expression=String(Number(result.toFixed(10)));
+  updateDisplay();
+ }catch{
+  $("display").textContent="Error";
+  expression="";
+ }
+}
+
+document.addEventListener("keydown",event=>{
+ if(!$("home").classList.contains("active"))return;
+
+ if(/^[0-9]$/.test(event.key)){
+  append(event.key);
+ }else if(["+","-","*","/","."].includes(event.key)){
+  append(event.key);
+ }else if(event.key==="Enter"){
+  calculate();
+ }else if(event.key==="Backspace"){
+  backspace();
+ }else if(event.key==="Escape"){
+  clearCalc();
+ }
+});
+
+// Turn a filename into a nice title
+function makeTitle(filename){
+ return filename
+  .replace(/\.html?$/i,"")
+  .replace(/[-_]/g," ")
+  .replace(/\b\w/g,char=>char.toUpperCase());
+}
+
+// Get games directly from the GitHub repository
+async function loadGames(){
+ $("status").textContent="Checking GitHub for games...";
+ $("gameGrid").innerHTML="";
+
+ try{
+  const response=await fetch(API_URL,{
+   headers:{
+    "Accept":"application/vnd.github+json"
+   },
+   cache:"no-store"
+  });
+
+  if(response.status===404){
+   games=[];
+   $("status").textContent=
+    "Your games folder hasn't been created yet. Upload your first HTML game to get started.";
+   renderGames();
+   return;
+  }
+
+  if(!response.ok){
+   throw Error("GitHub returned status "+response.status);
+  }
+
+  const files=await response.json();
+
+  if(!Array.isArray(files))throw Error("Unexpected GitHub response");
+
+  games=files
+   .filter(file=>
+    file.type==="file" &&
+    /\.html?$/i.test(file.name)
+   )
+   .map(file=>({
+    name:makeTitle(file.name),
+    filename:file.name,
+    url:PAGES_URL+encodeURIComponent(file.name),
+    download:file.download_url
+   }))
+   .sort((a,b)=>a.name.localeCompare(b.name));
+
+  $("status").textContent=
+   games.length
+   ? `${games.length} game${games.length===1?"":"s"} found in your GitHub library.`
+   : "No HTML games found yet. Upload an HTML file into your games folder.";
+
+  renderGames();
+
+ }catch(error){
+  console.error(error);
+  $("status").textContent=
+   "Couldn't load games. Check your internet connection or try again shortly.";
+  $("gameGrid").innerHTML=
+   '<div class="empty">Unable to contact GitHub. Try refreshing.</div>';
+ }
+}
+
+function renderGames(){
+ const grid=$("gameGrid");
+ grid.innerHTML="";
+
+ const query=$("search").value.trim().toLowerCase();
+
+ const filtered=games.filter(game=>
+  game.name.toLowerCase().includes(query) ||
+  game.filename.toLowerCase().includes(query)
+ );
+
+ if(!filtered.length){
+  grid.innerHTML=
+   '<div class="empty">No games match your search.</div>';
+  return;
+ }
+
+ filtered.forEach(game=>{
+  const card=document.createElement("article");
+  card.className="card";
+
+  const top=document.createElement("div");
+  const icon=document.createElement("div");
+  icon.className="game-icon";
+  icon.textContent="🎮";
+
+  const title=document.createElement("h3");
+  title.textContent=game.name;
+
+  const description=document.createElement("p");
+  description.textContent=game.filename;
+
+  top.append(icon,title,description);
+
+  const play=document.createElement("button");
+  play.textContent="PLAY NOW →";
+  play.onclick=()=>playGame(game);
+
+  card.append(top,play);
+  grid.appendChild(card);
+ });
+}
+
+function playGame(game){
+ currentGame=game;
+ $("playingTitle").textContent=game.name;
+
+ const frame=$("gameFrame");
+ frame.src=game.url;
+
+ showPage("player");
+}
+
+function closeGame(){
+ $("gameFrame").src="about:blank";
+ currentGame=null;
+ showPage("arcade");
+}
+
+function fullscreenGame(){
+ const frame=$("gameFrame");
+ if(frame.requestFullscreen){
+  frame.requestFullscreen().catch(()=>{});
+ }
+}
+
+function openGitHub(){
+ window.open(
+  `https://github.com/${USERNAME}/${REPOSITORY}/tree/main/${GAME_FOLDER}`,
+  "_blank"
+ );
+}
+
+updateDisplay();
+</script>
 </body>
 </html>
