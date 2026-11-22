@@ -1,0 +1,580 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Zombie Rush</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101522;color:#fff;font-family:Arial,sans-serif;overflow:hidden;touch-action:none}
+#gameWrap{width:100vw;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
+#top{width:min(100%,950px);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+h1{font-size:22px;margin:0;color:#8cf5ac;letter-spacing:1px}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{background:#202c40;padding:7px 10px;border-radius:8px;font-size:13px;font-weight:bold}
+.stat b{color:#8cf5ac}
+#bars{width:min(100%,950px);display:flex;gap:8px;align-items:center}
+.bar{height:11px;background:#29374b;border-radius:20px;overflow:hidden;flex:1}
+.fill{height:100%;width:100%;transition:width .1s}
+#healthFill{background:#ef6374}
+#xpFill{background:#6cbbff}
+#canvasBox{position:relative;width:min(100%,950px);max-height:calc(100dvh - 125px);aspect-ratio:3/2;border:2px solid #33445b;border-radius:12px;overflow:hidden;background:#1d352b;box-shadow:0 12px 45px #0007}
+canvas{width:100%;height:100%;display:block}
+#hudText{position:absolute;top:9px;left:12px;font-size:12px;color:#e2eadf;text-shadow:0 2px 3px #000;pointer-events:none}
+#overlay{position:absolute;inset:0;background:#09101de8;display:flex;align-items:center;justify-content:center;padding:18px;z-index:5}
+#overlay.hidden{display:none}
+.modal{width:min(100%,560px);text-align:center}
+.modal h2{font-size:34px;color:#8cf5ac;margin:0 0 10px}
+.modal p{color:#c2ccda;line-height:1.5}
+.mainBtn{background:#45bd75;color:#07150c;font-size:17px;font-weight:bold;border:0;border-radius:10px;padding:14px 28px;cursor:pointer}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.choice{background:#24344a;color:white;border:2px solid #415773;border-radius:12px;padding:15px 9px;min-height:130px;cursor:pointer}
+.choice:hover{border-color:#8cf5ac;background:#30455d}
+.choice strong{display:block;color:#9af2b2;font-size:16px;margin:8px 0}
+.choice small{color:#d0d9e5;line-height:1.4}
+#mobileControls{position:absolute;inset:0;pointer-events:none;display:none}
+#stickBase{position:absolute;left:18px;bottom:18px;width:112px;height:112px;border-radius:50%;background:#ffffff20;border:2px solid #ffffff45;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:50%;top:50%;width:44px;height:44px;border-radius:50%;background:#ffffff9c;transform:translate(-50%,-50%);pointer-events:none}
+#mobileHint{position:absolute;right:13px;bottom:22px;font-size:11px;color:#fff9;text-align:right;text-shadow:0 1px 3px #000}
+#pause{position:absolute;right:10px;top:10px;background:#172436dd;color:white;border:1px solid #ffffff50;border-radius:8px;padding:8px 12px;z-index:3}
+#bottom{width:min(100%,950px);display:flex;justify-content:space-between;color:#9eafc3;font-size:11px}
+@media(pointer:coarse){#mobileControls{display:block}}
+@media(max-width:600px){
+ #gameWrap{padding:5px;gap:5px}
+ h1{font-size:17px}
+ .stat{font-size:11px;padding:6px}
+ #canvasBox{width:100%;max-height:calc(100dvh - 105px)}
+ .choices{grid-template-columns:1fr;gap:7px}
+ .choice{min-height:0;padding:11px;display:flex;align-items:center;gap:10px;text-align:left}
+ .choice strong{margin:0 0 4px}
+ .choice .emoji{font-size:25px}
+ .modal h2{font-size:27px}
+ .modal p{font-size:13px}
+}
+</style>
+</head>
+<body>
+<div id="gameWrap">
+ <div id="top">
+  <h1>☣ ZOMBIE RUSH</h1>
+  <div class="stats">
+   <div class="stat">❤️ <b id="hp">100</b></div>
+   <div class="stat">⭐ LV <b id="level">1</b></div>
+   <div class="stat">☣ WAVE <b id="wave">1</b></div>
+   <div class="stat">⏱ <b id="time">0:00</b></div>
+  </div>
+ </div>
+ <div id="bars">
+  <span style="font-size:11px">HP</span>
+  <div class="bar"><div class="fill" id="healthFill"></div></div>
+  <span style="font-size:11px">XP</span>
+  <div class="bar"><div class="fill" id="xpFill"></div></div>
+ </div>
+
+ <div id="canvasBox">
+  <canvas id="game" width="900" height="600"></canvas>
+  <div id="hudText">SURVIVE THE HORDE</div>
+  <button id="pause">Ⅱ</button>
+  <div id="mobileControls">
+   <div id="stickBase"><div id="stick"></div></div>
+   <div id="mobileHint">MOVE<br>WITH JOYSTICK</div>
+  </div>
+  <div id="overlay">
+   <div class="modal" id="modalContent">
+    <h2>☣ ZOMBIE RUSH</h2>
+    <p>Survive endless zombie waves. Collect glowing XP, level up and build an incredibly powerful set of abilities.</p>
+    <p><b>PC:</b> WASD or arrow keys to move.<br><b>Mobile:</b> Use the joystick.</p>
+    <p>Your abilities attack automatically. Just keep moving!</p>
+    <button class="mainBtn" id="start">START SURVIVING</button>
+   </div>
+  </div>
+ </div>
+ <div id="bottom">
+  <span>Abilities attack automatically</span>
+  <span id="kills">Zombies defeated: 0</span>
+ </div>
+</div>
+
+<script>
+(()=>{
+"use strict";
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const $=id=>document.getElementById(id);
+const W=900,H=600;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>a+Math.random()*(b-a);
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+let running=false,paused=false,over=false,choosing=false;
+let last=0,elapsed=0,spawnClock=0,waveClock=0;
+let wave=1,kills=0,level=1,xp=0,xpNeed=8;
+let enemies=[],gems=[],bolts=[],particles=[];
+let camera={x:0,y:0};
+let keys={};
+let joy={x:0,y:0,active:false,id:null};
+let lastDamage=0,flash=0;
+
+const world={w:2400,h:1800};
+const player={
+ x:1200,y:900,r:16,speed:220,
+ hp:100,maxHp:100,
+ magnet:95,
+ invincible:0
+};
+
+const abilities={
+ ring:{level:1,max:8},
+ bolt:{level:1,max:8},
+ pulse:{level:0,max:8}
+};
+
+let upgrades=[
+ {id:"ring",name:"Orbiting Ring",emoji:"💫",desc:"Add another spinning energy ring around you.",max:8},
+ {id:"ringDamage",name:"Ring Power",emoji:"✨",desc:"Your orbiting rings deal more damage.",max:8},
+ {id:"bolt",name:"Arcane Sparks",emoji:"🔮",desc:"Fire more magic sparks automatically.",max:8},
+ {id:"boltPower",name:"Spark Power",emoji:"⚡",desc:"Your magic sparks deal more damage.",max:8},
+ {id:"pulse",name:"Energy Aura",emoji:"🌟",desc:"Unlock a damaging aura around your character.",max:8},
+ {id:"speed",name:"Swift Feet",emoji:"👟",desc:"Increase your movement speed.",max:8},
+ {id:"health",name:"Extra Health",emoji:"💚",desc:"Restore health and increase your maximum health.",max:8},
+ {id:"magnet",name:"XP Magnet",emoji:"🧲",desc:"Collect XP gems from further away.",max:8}
+];
+let stats={ringDamage:16,boltDamage:13,boltRate:1.05,ringCount:1,pulseDamage:0,speedBonus:0};
+
+function say(s){$("hudText").textContent=s}
+function showOverlay(html){
+ $("modalContent").innerHTML=html;
+ $("overlay").classList.remove("hidden");
+}
+function hideOverlay(){$("overlay").classList.add("hidden")}
+
+function reset(){
+ running=true;paused=false;over=false;choosing=false;
+ elapsed=0;spawnClock=0;waveClock=0;
+ wave=1;kills=0;level=1;xp=0;xpNeed=8;
+ enemies=[];gems=[];bolts=[];particles=[];
+ player.x=1200;player.y=900;player.hp=100;player.maxHp=100;
+ player.speed=220;player.magnet=95;player.invincible=0;
+ abilities.ring.level=1;abilities.bolt.level=1;abilities.pulse.level=0;
+ stats={ringDamage:16,boltDamage:13,boltRate:1.05,ringCount:1,pulseDamage:0,speedBonus:0};
+ lastDamage=0;flash=0;
+ hideOverlay();say("SURVIVE THE HORDE");updateUI();
+}
+
+$("start").onclick=reset;
+$("pause").onclick=()=>{
+ if(!running||over||choosing)return;
+ paused=!paused;
+ if(paused){
+  showOverlay(`<h2>PAUSED</h2><p>Take a breather. The zombies are waiting.</p><button class="mainBtn" id="resume">RESUME</button>`);
+  $("resume").onclick=()=>{paused=false;hideOverlay()};
+ }else hideOverlay();
+};
+
+function updateUI(){
+ $("hp").textContent=Math.ceil(player.hp);
+ $("level").textContent=level;
+ $("wave").textContent=wave;
+ $("time").textContent=Math.floor(elapsed/60)+":"+String(Math.floor(elapsed%60)).padStart(2,"0");
+ $("healthFill").style.width=100*player.hp/player.maxHp+"%";
+ $("xpFill").style.width=100*xp/xpNeed+"%";
+ $("kills").textContent="Zombies defeated: "+kills;
+}
+
+function cameraUpdate(){
+ camera.x=clamp(player.x-W/2,0,world.w-W);
+ camera.y=clamp(player.y-H/2,0,world.h-H);
+}
+
+function spawnEnemy(){
+ const side=Math.floor(Math.random()*4);
+ let x,y;
+ if(side===0){x=rand(0,world.w);y=-25}
+ else if(side===1){x=world.w+25;y=rand(0,world.h)}
+ else if(side===2){x=rand(0,world.w);y=world.h+25}
+ else{x=-25;y=rand(0,world.h)}
+ const boss=wave%5===0&&Math.random()<.12;
+ const hp=(22+wave*5)*(boss?7:1);
+ enemies.push({
+  x,y,r:boss?25:rand(12,16),hp,maxHp:hp,
+  speed:(boss?48:rand(45,70))+Math.min(wave*1.5,45),
+  damage:boss?18:10,boss,
+  hit:0
+ });
+}
+
+function dropGem(x,y,value=1){
+ gems.push({x,y,r:value>1?8:6,value,phase:rand(0,6.28)});
+}
+
+function burst(x,y,color,n=7){
+ for(let i=0;i<n;i++){
+  const a=rand(0,Math.PI*2),s=rand(35,150);
+  particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.2,.55),max:.55,color,r:rand(2,4)});
+ }
+}
+
+function damageEnemy(e,damage){
+ if(!enemies.includes(e))return;
+ e.hp-=damage;e.hit=.12;
+ if(e.hp<=0){
+  enemies.splice(enemies.indexOf(e),1);
+  kills++;
+  dropGem(e.x,e.y,e.boss?5:1);
+  burst(e.x,e.y,e.boss?"#d98cff":"#8fe49c",e.boss?18:7);
+  if(e.boss){
+   player.hp=Math.min(player.maxHp,player.hp+18);
+   say("BIG ZOMBIE DEFEATED! +18 HP");
+  }
+ }
+}
+
+function nearestEnemy(){
+ let best=null,bd=Infinity;
+ for(const e of enemies){
+  const d=dist(player,e);
+  if(d<bd){bd=d;best=e}
+ }
+ return best;
+}
+
+let boltClock=0;
+function fireBolt(){
+ const target=nearestEnemy();
+ if(!target)return;
+ const a=Math.atan2(target.y-player.y,target.x-player.x);
+ const speed=430;
+ bolts.push({
+  x:player.x,y:player.y,
+  vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,
+  damage:stats.boltDamage,
+  life:1.5,r:6
+ });
+}
+
+function collectGem(g){
+ xp+=g.value;
+ while(xp>=xpNeed){
+  xp-=xpNeed;level++;xpNeed=Math.floor(xpNeed*1.28+4);
+  levelUp();
+ }
+}
+
+function levelUp(){
+ if(choosing||over)return;
+ choosing=true;
+ const available=upgrades.filter(u=>{
+  if(u.id==="ring"&&abilities.ring.level>=u.max)return false;
+  if(u.id==="bolt"&&abilities.bolt.level>=u.max)return false;
+  if(u.id==="pulse"&&abilities.pulse.level>=u.max)return false;
+  if(u.id==="ringDamage"&&abilities.ring.level===0)return false;
+  if(u.id==="boltPower"&&abilities.bolt.level===0)return false;
+  if(u.id==="pulse"&&abilities.pulse.level>=u.max)return false;
+  return true;
+ });
+ const picks=[];
+ while(picks.length<3&&available.length){
+  const i=Math.floor(Math.random()*available.length);
+  picks.push(available.splice(i,1)[0]);
+ }
+ if(!picks.length){choosing=false;return}
+ showOverlay(`<h2>LEVEL UP!</h2><p>Choose an upgrade to become stronger.</p><div class="choices" id="choices"></div>`);
+ const box=$("choices");
+ for(const u of picks){
+  const b=document.createElement("button");
+  b.className="choice";
+  b.innerHTML=`<span class="emoji">${u.emoji}</span><strong>${u.name}</strong><small>${u.desc}</small>`;
+  b.onclick=()=>{applyUpgrade(u.id);choosing=false;hideOverlay();updateUI()};
+  box.appendChild(b);
+ }
+}
+
+function applyUpgrade(id){
+ switch(id){
+  case "ring":
+   abilities.ring.level++;stats.ringCount++;break;
+  case "ringDamage":
+   stats.ringDamage*=1.45;break;
+  case "bolt":
+   abilities.bolt.level++;
+   stats.boltRate=Math.max(.28,stats.boltRate*.82);break;
+  case "boltPower":
+   stats.boltDamage*=1.5;break;
+  case "pulse":
+   abilities.pulse.level++;
+   stats.pulseDamage=abilities.pulse.level*9;break;
+  case "speed":
+   player.speed+=22;break;
+  case "health":
+   player.maxHp+=20;player.hp=Math.min(player.maxHp,player.hp+35);break;
+  case "magnet":
+   player.magnet+=65;break;
+ }
+ say("UPGRADE ACQUIRED!");
+}
+
+function update(dt){
+ if(!running||paused||over||choosing)return;
+ elapsed+=dt;waveClock+=dt;flash=Math.max(0,flash-dt);
+ player.invincible=Math.max(0,player.invincible-dt);
+
+ if(waveClock>=35){
+  waveClock=0;wave++;
+  say("WAVE "+wave+" — MORE ZOMBIES!");
+  burst(player.x,player.y,"#8cf5ac",18);
+ }
+
+ spawnClock-=dt;
+ const spawnRate=Math.max(.24,1.25-wave*.055);
+ if(spawnClock<=0){
+  spawnEnemy();spawnClock=spawnRate;
+  if(wave>=4&&Math.random()<.2)spawnEnemy();
+ }
+
+ let mx=0,my=0;
+ if(keys["w"]||keys["arrowup"])my--;
+ if(keys["s"]||keys["arrowdown"])my++;
+ if(keys["a"]||keys["arrowleft"])mx--;
+ if(keys["d"]||keys["arrowright"])mx++;
+ mx+=joy.x;my+=joy.y;
+ const len=Math.hypot(mx,my);
+ if(len>1){mx/=len;my/=len}
+ player.x=clamp(player.x+mx*player.speed*dt,player.r,world.w-player.r);
+ player.y=clamp(player.y+my*player.speed*dt,player.r,world.h-player.r);
+
+ // Zombies follow the player
+ for(const e of enemies){
+  const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy)||1;
+  e.x+=dx/d*e.speed*dt;e.y+=dy/d*e.speed*dt;
+  e.hit=Math.max(0,e.hit-dt);
+  if(d<player.r+e.r&&player.invincible<=0){
+   player.hp-=e.damage;
+   player.invincible=.65;
+   flash=.15;
+   if(player.hp<=0){player.hp=0;gameOver()}
+  }
+ }
+
+ // Automatic magic sparks
+ boltClock-=dt;
+ if(boltClock<=0&&enemies.length){
+  fireBolt();boltClock=stats.boltRate;
+ }
+
+ for(const b of [...bolts]){
+  b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+  const target=enemies.find(e=>dist(e,b)<e.r+b.r+3);
+  if(target){
+   damageEnemy(target,b.damage);
+   burst(b.x,b.y,"#91d8ff",4);
+   bolts.splice(bolts.indexOf(b),1);
+  }else if(b.life<=0)bolts.splice(bolts.indexOf(b),1);
+ }
+
+ // Spinning energy rings
+ for(const e of [...enemies]){
+  const n=stats.ringCount;
+  for(let i=0;i<n;i++){
+   const angle=elapsed*2.5+i*Math.PI*2/n;
+   const radius=53+i*3;
+   const rx=player.x+Math.cos(angle)*radius;
+   const ry=player.y+Math.sin(angle)*radius;
+   if(Math.hypot(e.x-rx,e.y-ry)<e.r+10){
+    if(!e.ringHit||elapsed-e.ringHit>.28){
+     damageEnemy(e,stats.ringDamage);
+     e.ringHit=elapsed;
+    }
+   }
+  }
+ }
+
+ // Energy aura
+ if(abilities.pulse.level>0){
+  for(const e of [...enemies]){
+   if(dist(player,e)<72&&(!e.pulseHit||elapsed-e.pulseHit>.7)){
+    damageEnemy(e,stats.pulseDamage);
+    e.pulseHit=elapsed;
+   }
+  }
+ }
+
+ // XP gems and magnetic collection
+ for(const g of [...gems]){
+  const d=dist(player,g);
+  if(d<player.magnet){
+   const a=Math.atan2(player.y-g.y,player.x-g.x);
+   const speed=260+Math.max(0,player.magnet-d)*3;
+   g.x+=Math.cos(a)*speed*dt;
+   g.y+=Math.sin(a)*speed*dt;
+  }
+  if(d<player.r+g.r+5){
+   collectGem(g);
+   gems.splice(gems.indexOf(g),1);
+   burst(g.x,g.y,"#75caff",4);
+  }
+ }
+
+ for(const p of [...particles]){
+  p.x+=p.vx*dt;p.y+=p.vy*dt;
+  p.vx*=.96;p.vy*=.96;p.life-=dt;
+  if(p.life<=0)particles.splice(particles.indexOf(p),1);
+ }
+
+ cameraUpdate();updateUI();
+}
+
+function drawBackground(){
+ ctx.fillStyle="#254333";ctx.fillRect(0,0,W,H);
+ const grid=100;
+ const sx=-camera.x%grid,sy=-camera.y%grid;
+ ctx.strokeStyle="rgba(255,255,255,.045)";ctx.lineWidth=1;
+ for(let x=sx;x<W;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+ for(let y=sy;y<H;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ // Small grass marks
+ ctx.fillStyle="#47724d";
+ for(let i=0;i<65;i++){
+  const x=((i*173+Math.floor(camera.x/3))%W);
+  const y=((i*97+Math.floor(camera.y/3))%H);
+  ctx.fillRect(x,y,3,3);
+ }
+}
+
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ ctx.save();
+ ctx.translate(-camera.x,-camera.y);
+ drawBackground();
+
+ // XP gems
+ for(const g of gems){
+  const pulse=1+Math.sin(elapsed*5+g.phase)*.12;
+  ctx.save();ctx.translate(g.x,g.y);ctx.rotate(Math.PI/4);
+  ctx.fillStyle=g.value>1?"#ffdc79":"#68c7ff";
+  ctx.fillRect(-g.r*pulse,-g.r*pulse,g.r*2*pulse,g.r*2*pulse);
+  ctx.restore();
+ }
+
+ // Energy aura
+ if(abilities.pulse.level>0){
+  ctx.beginPath();ctx.arc(player.x,player.y,72,0,Math.PI*2);
+  ctx.fillStyle="rgba(126,220,255,.09)";ctx.fill();
+  ctx.strokeStyle="rgba(126,220,255,.45)";ctx.lineWidth=3;ctx.stroke();
+ }
+
+ // Spinning rings
+ for(let i=0;i<stats.ringCount;i++){
+  const angle=elapsed*2.5+i*Math.PI*2/stats.ringCount;
+  const radius=53+i*3;
+  const x=player.x+Math.cos(angle)*radius;
+  const y=player.y+Math.sin(angle)*radius;
+  ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);
+  ctx.fillStyle="#6fe7ff";ctx.shadowColor="#52caff";ctx.shadowBlur=15;ctx.fill();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
+  ctx.fillStyle="#fff";ctx.fill();
+ }
+
+ // Magic sparks
+ for(const b of bolts){
+  ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+  ctx.fillStyle="#b3e8ff";ctx.shadowColor="#6fcaff";ctx.shadowBlur=13;ctx.fill();ctx.shadowBlur=0;
+ }
+
+ // Zombies
+ for(const e of enemies){
+  ctx.save();ctx.translate(e.x,e.y);
+  ctx.fillStyle="#0005";ctx.beginPath();ctx.ellipse(0,e.r*.85,e.r*.95,e.r*.35,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=e.hit>0?"#fff":(e.boss?"#9d66c9":"#72b56d");
+  ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#34553a";
+  ctx.beginPath();ctx.arc(-e.r*.35,-e.r*.12,e.r*.16,0,Math.PI*2);ctx.arc(e.r*.35,-e.r*.12,e.r*.16,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#f3f5ce";
+  ctx.beginPath();ctx.arc(-e.r*.3,-e.r*.18,e.r*.08,0,Math.PI*2);ctx.arc(e.r*.3,-e.r*.18,e.r*.08,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#314a32";ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(0,e.r*.12,e.r*.28,.2,Math.PI-.2);ctx.stroke();
+  if(e.boss){ctx.fillStyle="#fff";ctx.font="bold 11px Arial";ctx.textAlign="center";ctx.fillText("BOSS",0,-e.r-9)}
+  ctx.fillStyle="#1b2921";ctx.fillRect(-e.r,-e.r-9,e.r*2,4);
+  ctx.fillStyle="#8cf08a";ctx.fillRect(-e.r,-e.r-9,e.r*2*Math.max(0,e.hp/e.maxHp),4);
+  ctx.restore();
+ }
+
+ // Player shadow
+ ctx.fillStyle="#0005";ctx.beginPath();ctx.ellipse(player.x,player.y+14,17,7,0,0,Math.PI*2);ctx.fill();
+
+ // Player character
+ ctx.save();ctx.translate(player.x,player.y);
+ if(player.invincible>0&&Math.floor(elapsed*16)%2===0)ctx.globalAlpha=.45;
+ ctx.fillStyle="#4c8edb";ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#f0c9a1";ctx.beginPath();ctx.arc(0,-4,10,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#28364b";ctx.fillRect(-9,-14,18,6);
+ ctx.fillStyle="#17263b";ctx.beginPath();ctx.arc(-4,-5,2,0,Math.PI*2);ctx.arc(4,-5,2,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(-4,-6,1,0,Math.PI*2);ctx.arc(4,-6,1,0,Math.PI*2);ctx.fill();
+ ctx.restore();
+
+ // Particles
+ for(const p of particles){
+  ctx.globalAlpha=clamp(p.life/p.max,0,1);
+  ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+ }
+ ctx.restore();
+
+ if(flash>0){ctx.fillStyle=`rgba(255,60,70,${flash*1.4})`;ctx.fillRect(0,0,W,H)}
+}
+
+function gameOver(){
+ over=true;running=false;
+ showOverlay(`<h2 style="color:#ff8490">RUN OVER</h2>
+ <p>You survived for <b>${Math.floor(elapsed/60)}m ${Math.floor(elapsed%60)}s</b>.</p>
+ <p>Reached wave <b>${wave}</b> · Level <b>${level}</b><br>Zombies defeated: <b>${kills}</b></p>
+ <button class="mainBtn" id="again">PLAY AGAIN</button>`);
+ $("again").onclick=reset;
+}
+
+function frame(t){
+ const dt=Math.min((t-last)/1000||0,.035);last=t;
+ update(dt);draw();
+ requestAnimationFrame(frame);
+}
+
+// Keyboard
+window.addEventListener("keydown",e=>{
+ const k=e.key.toLowerCase();
+ keys[k]=true;
+ if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();
+ if(k==="escape"&&running&&!choosing&&!over)$("pause").click();
+});
+window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+window.addEventListener("blur",()=>{keys={};joy.x=0;joy.y=0;});
+
+// Mobile joystick
+const base=$("stickBase"),stick=$("stick");
+function moveJoy(e){
+ const r=base.getBoundingClientRect();
+ const cx=r.left+r.width/2,cy=r.top+r.height/2;
+ let dx=e.clientX-cx,dy=e.clientY-cy;
+ const max=35,d=Math.hypot(dx,dy)||1;
+ if(d>max){dx=dx/d*max;dy=dy/d*max}
+ joy.x=dx/max;joy.y=dy/max;
+ stick.style.left=`calc(50% + ${dx}px)`;
+ stick.style.top=`calc(50% + ${dy}px)`;
+}
+base.addEventListener("pointerdown",e=>{
+ e.preventDefault();joy.active=true;joy.id=e.pointerId;
+ base.setPointerCapture(e.pointerId);moveJoy(e);
+});
+base.addEventListener("pointermove",e=>{if(joy.active&&e.pointerId===joy.id)moveJoy(e)});
+function releaseJoy(e){
+ if(!joy.active||e.pointerId!==joy.id)return;
+ joy.active=false;joy.id=null;joy.x=0;joy.y=0;
+ stick.style.left="50%";stick.style.top="50%";
+}
+base.addEventListener("pointerup",releaseJoy);
+base.addEventListener("pointercancel",releaseJoy);
+
+updateUI();cameraUpdate();draw();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
