@@ -4,108 +4,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2483 Arcade</title>
+<title>Calculator</title>
+
 <style>
 *{box-sizing:border-box}
 body{
- margin:0;background:#090b12;color:white;
- font-family:Arial,sans-serif;min-height:100vh;
+ margin:0;background:#090b12;color:#fff;
+ font-family:Arial,sans-serif;min-height:100vh
 }
-button,input,textarea{font:inherit}
+button,input{font:inherit}
 button{
- background:#7055ff;color:white;border:0;
- padding:12px 18px;border-radius:10px;
- cursor:pointer;font-weight:bold;
+ border:0;border-radius:10px;padding:12px 17px;
+ background:#7557ff;color:white;font-weight:bold;
+ cursor:pointer
 }
-button:hover{filter:brightness(1.2)}
-input,textarea{
- background:#171b29;color:white;border:1px solid #30364a;
- padding:12px;border-radius:9px;width:100%;
+button:hover{filter:brightness(1.15)}
+input{
+ background:#171c2a;color:white;border:1px solid #30374b;
+ padding:12px;border-radius:10px;outline:none
 }
 .page{display:none;min-height:100vh}
 .page.active{display:block}
 .center{
  min-height:100vh;display:flex;align-items:center;
- justify-content:center;padding:20px;
+ justify-content:center;padding:20px
 }
+
+/* CALCULATOR */
 .calculator{
- width:340px;background:#131724;padding:24px;
- border:1px solid #272e42;border-radius:22px;
- box-shadow:0 20px 70px #0008;
+ width:340px;max-width:100%;padding:23px;
+ background:#151a27;border:1px solid #30364a;
+ border-radius:22px;box-shadow:0 20px 70px #0009
 }
-.logo{text-align:center;font-size:23px;font-weight:900;
- letter-spacing:4px;margin-bottom:20px}
 .display{
  background:#090d16;border-radius:12px;
  padding:20px;text-align:right;font-size:34px;
- min-height:82px;margin-bottom:15px;overflow:hidden;
+ min-height:82px;margin-bottom:15px;overflow:hidden
 }
 .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.keys button{font-size:20px;min-height:58px;background:#252c40}
+.keys button{
+ min-height:58px;font-size:20px;background:#293147
+}
 .keys .operator{background:#7055ff}
-.keys .special{background:#394258}
+.keys .special{background:#414a60}
 .keys .equals{background:#13a87c}
-.hint{text-align:center;color:#727d96;font-size:12px;margin-top:18px}
+
+/* ARCADE */
 header{
- display:flex;justify-content:space-between;align-items:center;
- padding:22px 5%;border-bottom:1px solid #252b3d;
- gap:15px;flex-wrap:wrap;
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:15px;padding:22px 5%;
+ border-bottom:1px solid #282e40
 }
 .brand{font-size:23px;font-weight:900;letter-spacing:3px}
-.container{max-width:1150px;margin:auto;padding:35px 22px}
+.container{max-width:1200px;margin:auto;padding:30px 22px}
 .hero{
- padding:35px;border-radius:20px;
- background:linear-gradient(120deg,#242052,#111827);
- margin-bottom:30px;
+ padding:35px;border-radius:19px;
+ background:linear-gradient(120deg,#292154,#121b2b);
+ margin-bottom:28px
 }
-.hero h1{font-size:38px;margin:0 0 10px}
+.hero h1{font-size:38px;margin:8px 0}
 .muted{color:#9aa5bc}
+.toolbar{
+ display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 25px
+}
+.toolbar input{flex:1;min-width:180px}
+.secondary{background:#30394f}
 .grid{
- display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
- gap:18px;
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+ gap:17px
 }
 .card{
- background:#151a28;border:1px solid #292f43;
- border-radius:16px;padding:20px;
- min-height:160px;display:flex;flex-direction:column;
- justify-content:space-between;
+ background:#161c2b;border:1px solid #2c3449;
+ border-radius:16px;padding:20px;min-height:185px;
+ display:flex;flex-direction:column;justify-content:space-between;
+ transition:transform .2s,border-color .2s
 }
-.card h3{margin:0 0 8px}
-.card p{color:#9aa5bc;font-size:14px}
-.card button{margin-top:12px}
-.top-actions{display:flex;gap:10px;flex-wrap:wrap}
-.secondary{background:#293147}
-.danger{background:#b83d55}
-.module-form{
- background:#151a28;padding:22px;border-radius:16px;
- margin-bottom:25px;border:1px solid #292f43;
+.card:hover{transform:translateY(-4px);border-color:#7661e8}
+.game-icon{
+ height:75px;border-radius:11px;
+ background:linear-gradient(135deg,#33266d,#182d48);
+ display:grid;place-items:center;font-size:34px;
+ margin-bottom:15px
 }
-.module-form label{display:block;margin:14px 0 7px;color:#aeb8cd}
-.module-form textarea{min-height:100px;resize:vertical}
+.card h3{margin:0 0 8px;font-size:19px}
+.card p{margin:0;color:#9aa5bc;font-size:13px;word-break:break-word}
+.card button{margin-top:17px}
+.status{font-size:13px;color:#9aa5bc;margin:15px 0}
+.empty{
+ text-align:center;padding:55px 20px;
+ background:#151a27;border-radius:16px;color:#aab3c5
+}
+footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
+
+/* GAME PLAYER */
+.gamebar{
+ display:flex;align-items:center;gap:14px;
+ padding:12px 18px;background:#121725;
+ min-height:65px
+}
+#playingTitle{flex:1;font-weight:bold}
 #gameFrame{
- width:100%;height:calc(100vh - 90px);border:0;background:#080a10;
+ width:100%;height:calc(100vh - 65px);
+ border:0;background:#080a10
 }
-.gamebar{display:flex;align-items:center;gap:12px;padding:12px 18px}
-.hidden{display:none!important}
-footer{text-align:center;color:#657087;padding:35px}
 @media(max-width:500px){
- .calculator{width:100%}
  .hero h1{font-size:29px}
+ .calculator{padding:17px}
+ .keys{gap:7px}
+ .keys button{min-height:55px}
 }
 </style>
 </head>
+
 <body>
 
-<!-- CALCULATOR HOME -->
+<!-- HOME: CALCULATOR ONLY -->
 <section id="home" class="page active">
  <div class="center">
   <div class="calculator">
-   <div class="logo">2483 ARCADE</div>
    <div id="display" class="display">0</div>
    <div class="keys">
     <button class="special" onclick="clearCalc()">AC</button>
     <button class="special" onclick="backspace()">DEL</button>
-    <button class="special" onclick="append('%')">%</button>
+    <button class="special" onclick="append('(')">(</button>
     <button class="operator" onclick="append('/')">÷</button>
 
     <button onclick="append('7')">7</button>
@@ -125,9 +147,9 @@ footer{text-align:center;color:#657087;padding:35px}
 
     <button onclick="append('0')">0</button>
     <button onclick="append('.')">.</button>
-    <button class="equals" style="grid-column:span 2" onclick="calculate()">=</button>
+    <button class="special" onclick="append(')')">)</button>
+    <button class="equals" onclick="calculate()">=</button>
    </div>
-   <div class="hint">Enter your calculation above</div>
   </div>
  </div>
 </section>
@@ -135,95 +157,81 @@ footer{text-align:center;color:#657087;padding:35px}
 <!-- ARCADE -->
 <section id="arcade" class="page">
  <header>
-  <div class="brand">2483 <span style="color:#927dff">ARCADE</span></div>
-  <div class="top-actions">
-   <button class="secondary" onclick="showPage('home')">Calculator</button>
-   <button onclick="showPage('developer')">Developer</button>
-  </div>
+  <div class="brand">BORED<span style="color:#927dff"> GAMES</span></div>
+  <button class="secondary" onclick="showPage('home')">Exit</button>
  </header>
+
  <main class="container">
   <div class="hero">
-   <p class="muted">WELCOME TO YOUR ARCADE</p>
-   <h1>What are we playing today?</h1>
-   <p class="muted">Your personal collection of games, all in one place.</p>
+   <p class="muted">YOUR PERSONAL GAME COLLECTION</p>
+   <h1>Welcome to the arcade.</h1>
+   <p class="muted">Pick a game and start playing.</p>
   </div>
-  <h2>Game library</h2>
+
+  <div class="toolbar">
+   <input id="search" placeholder="Search games..." oninput="renderGames()">
+   <button onclick="loadGames()">↻ Refresh games</button>
+   <button class="secondary" onclick="openGitHub()">Manage games</button>
+  </div>
+
+  <div id="status" class="status">Loading your games...</div>
   <div id="gameGrid" class="grid"></div>
-  <footer>2483 ARCADE · YOUR PERSONAL GAME COLLECTION</footer>
- </main>
-</section>
 
-<!-- DEVELOPER -->
-<section id="developer" class="page">
- <header>
-  <div class="brand">DEVELOPER PANEL</div>
-  <div class="top-actions">
-   <button class="secondary" onclick="showPage('arcade')">Back to arcade</button>
-   <button class="danger" onclick="showPage('home')">Exit</button>
-  </div>
- </header>
- <main class="container">
-  <div class="hero">
-   <h1>Module manager</h1>
-   <p class="muted">Add, edit and organise games in your arcade.</p>
-  </div>
-
-  <div class="module-form">
-   <h2 id="formTitle">Add a new module</h2>
-   <label>Game name</label>
-   <input id="gameName" placeholder="e.g. PolyTrack">
-   <label>Description</label>
-   <input id="gameDescription" placeholder="Describe your game">
-   <label>Game URL</label>
-   <input id="gameURL" placeholder="https://example.com/game">
-   <label>Or paste a complete HTML game</label>
-   <textarea id="gameHTML" placeholder="Paste your HTML game code here..."></textarea>
-   <p class="muted" style="font-size:12px">
-    Use either a URL or HTML code. Some websites block embedding, so their URLs may not work inside the arcade.
-   </p>
-   <div class="top-actions">
-    <button onclick="saveModule()">Save module</button>
-    <button class="secondary" onclick="resetForm()">Clear</button>
-   </div>
-  </div>
-
-  <h2>Your modules</h2>
-  <div id="developerGrid" class="grid"></div>
+  <footer>BORED GAMES · GAME LIBRARY</footer>
  </main>
 </section>
 
 <!-- GAME PLAYER -->
 <section id="player" class="page">
  <div class="gamebar">
-  <button class="secondary" onclick="showPage('arcade')">← Back</button>
-  <strong id="playingTitle">Game</strong>
-  <button class="secondary" onclick="fullscreenGame()">Fullscreen</button>
+  <button class="secondary" onclick="closeGame()">← Back</button>
+  <span id="playingTitle">Game</span>
+  <button onclick="fullscreenGame()">Fullscreen</button>
  </div>
- <iframe id="gameFrame" title="Game player" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
+ <iframe id="gameFrame" allow="fullscreen; autoplay; gamepad; pointer-lock"
+ allowfullscreen></iframe>
 </section>
 
 <script>
+const USERNAME = "jacobflint2483-sketch";
+const REPOSITORY = "bored-games";
+const GAME_FOLDER = "games";
+
+const API_URL =
+ `https://api.github.com/repos/${USERNAME}/${REPOSITORY}/contents/${GAME_FOLDER}`;
+
+const PAGES_URL =
+ `https://${USERNAME}.github.io/${REPOSITORY}/${GAME_FOLDER}/`;
+
 let expression = "";
-let modules = [];
-let editingId = null;
+let games = [];
+let currentGame = null;
 
 const $ = id => document.getElementById(id);
 
 function showPage(id){
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.querySelectorAll(".page").forEach(page=>{
+  page.classList.remove("active");
+ });
  $(id).classList.add("active");
- if(id==="arcade") renderGames();
- if(id==="developer") renderDeveloper();
 }
 
 function updateDisplay(){
- $("display").textContent = expression || "0";
+ $("display").textContent=expression || "0";
 }
 
 function append(value){
- if(expression.length>45)return;
- expression += value;
+ if(expression.length>=40)return;
+ expression+=value;
  updateDisplay();
+
+ // Secret entry
+ if(expression==="2483"){
+  expression="";
+  updateDisplay();
+  loadGames();
+  showPage("arcade");
+ }
 }
 
 function clearCalc(){
@@ -238,9 +246,13 @@ function backspace(){
 
 function calculate(){
  try{
-  if(!expression || !/^[0-9+\-*/%.() ]+$/.test(expression))return;
+  if(!expression)return;
+  if(!/^[0-9+\-*/(). ]+$/.test(expression))throw Error();
+
   const result=Function('"use strict";return ('+expression+')')();
+
   if(!Number.isFinite(result))throw Error();
+
   expression=String(Number(result.toFixed(10)));
   updateDisplay();
  }catch{
@@ -249,159 +261,161 @@ function calculate(){
  }
 }
 
-// Secret calculator code
-document.addEventListener("keydown",e=>{
+document.addEventListener("keydown",event=>{
  if(!$("home").classList.contains("active"))return;
- if(/^[0-9]$/.test(e.key))append(e.key);
- else if(["+","-","*","/","."].includes(e.key))append(e.key);
- else if(e.key==="Enter")calculate();
- else if(e.key==="Backspace")backspace();
- else if(e.key==="Escape")clearCalc();
+
+ if(/^[0-9]$/.test(event.key)){
+  append(event.key);
+ }else if(["+","-","*","/","."].includes(event.key)){
+  append(event.key);
+ }else if(event.key==="Enter"){
+  calculate();
+ }else if(event.key==="Backspace"){
+  backspace();
+ }else if(event.key==="Escape"){
+  clearCalc();
+ }
 });
 
-let secretSequence="";
-function checkSecret(){
- if(expression==="2483"){
-  clearCalc();
-  showPage("arcade");
- }
+// Turn a filename into a nice title
+function makeTitle(filename){
+ return filename
+  .replace(/\.html?$/i,"")
+  .replace(/[-_]/g," ")
+  .replace(/\b\w/g,char=>char.toUpperCase());
 }
-const originalAppend=append;
-append=function(value){
- originalAppend(value);
- checkSecret();
-};
 
-// Modules stored locally
-function loadModules(){
+// Get games directly from the GitHub repository
+async function loadGames(){
+ $("status").textContent="Checking GitHub for games...";
+ $("gameGrid").innerHTML="";
+
  try{
-  modules=JSON.parse(localStorage.getItem("arcadeModules")||"[]");
-  if(!Array.isArray(modules))modules=[];
- }catch{modules=[]}
-}
-function saveModules(){
- localStorage.setItem("arcadeModules",JSON.stringify(modules));
-}
+  const response=await fetch(API_URL,{
+   headers:{
+    "Accept":"application/vnd.github+json"
+   },
+   cache:"no-store"
+  });
 
-function escapeHTML(value){
- return String(value).replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[c]));
+  if(response.status===404){
+   games=[];
+   $("status").textContent=
+    "Your games folder hasn't been created yet. Upload your first HTML game to get started.";
+   renderGames();
+   return;
+  }
+
+  if(!response.ok){
+   throw Error("GitHub returned status "+response.status);
+  }
+
+  const files=await response.json();
+
+  if(!Array.isArray(files))throw Error("Unexpected GitHub response");
+
+  games=files
+   .filter(file=>
+    file.type==="file" &&
+    /\.html?$/i.test(file.name)
+   )
+   .map(file=>({
+    name:makeTitle(file.name),
+    filename:file.name,
+    url:PAGES_URL+encodeURIComponent(file.name),
+    download:file.download_url
+   }))
+   .sort((a,b)=>a.name.localeCompare(b.name));
+
+  $("status").textContent=
+   games.length
+   ? `${games.length} game${games.length===1?"":"s"} found in your GitHub library.`
+   : "No HTML games found yet. Upload an HTML file into your games folder.";
+
+  renderGames();
+
+ }catch(error){
+  console.error(error);
+  $("status").textContent=
+   "Couldn't load games. Check your internet connection or try again shortly.";
+  $("gameGrid").innerHTML=
+   '<div class="empty">Unable to contact GitHub. Try refreshing.</div>';
+ }
 }
 
 function renderGames(){
- $("gameGrid").innerHTML="";
- if(!modules.length){
-  $("gameGrid").innerHTML='<p class="muted">No games added yet. Open Developer to add your first game.</p>';
+ const grid=$("gameGrid");
+ grid.innerHTML="";
+
+ const query=$("search").value.trim().toLowerCase();
+
+ const filtered=games.filter(game=>
+  game.name.toLowerCase().includes(query) ||
+  game.filename.toLowerCase().includes(query)
+ );
+
+ if(!filtered.length){
+  grid.innerHTML=
+   '<div class="empty">No games match your search.</div>';
   return;
  }
- modules.forEach(game=>{
-  const card=document.createElement("div");
+
+ filtered.forEach(game=>{
+  const card=document.createElement("article");
   card.className="card";
-  card.innerHTML=`
-   <div>
-    <h3>${escapeHTML(game.name)}</h3>
-    <p>${escapeHTML(game.description)}</p>
-   </div>
-   <button>PLAY NOW →</button>`;
-  card.querySelector("button").onclick=()=>playGame(game.id);
-  $("gameGrid").appendChild(card);
+
+  const top=document.createElement("div");
+  const icon=document.createElement("div");
+  icon.className="game-icon";
+  icon.textContent="🎮";
+
+  const title=document.createElement("h3");
+  title.textContent=game.name;
+
+  const description=document.createElement("p");
+  description.textContent=game.filename;
+
+  top.append(icon,title,description);
+
+  const play=document.createElement("button");
+  play.textContent="PLAY NOW →";
+  play.onclick=()=>playGame(game);
+
+  card.append(top,play);
+  grid.appendChild(card);
  });
 }
 
-function renderDeveloper(){
- $("developerGrid").innerHTML="";
- modules.forEach(game=>{
-  const card=document.createElement("div");
-  card.className="card";
-  card.innerHTML=`
-   <div>
-    <h3>${escapeHTML(game.name)}</h3>
-    <p>${escapeHTML(game.description)}</p>
-   </div>
-   <div class="top-actions">
-    <button class="secondary edit">Edit</button>
-    <button class="danger delete">Delete</button>
-   </div>`;
-  card.querySelector(".edit").onclick=()=>editModule(game.id);
-  card.querySelector(".delete").onclick=()=>{
-   if(confirm("Delete "+game.name+"?")){
-    modules=modules.filter(m=>m.id!==game.id);
-    saveModules();
-    renderDeveloper();
-   }
-  };
-  $("developerGrid").appendChild(card);
- });
-}
-
-function saveModule(){
- const name=$("gameName").value.trim();
- const description=$("gameDescription").value.trim();
- const url=$("gameURL").value.trim();
- const html=$("gameHTML").value;
-
- if(!name){alert("Please enter a game name.");return}
- if(!url&&!html.trim()){alert("Please enter a game URL or HTML code.");return}
- if(url&&!/^https?:\/\//i.test(url)){
-  alert("Please use a full http:// or https:// URL.");return;
- }
-
- const data={id:editingId||Date.now().toString(),name,description,url,html};
- if(editingId){
-  modules=modules.map(m=>m.id===editingId?data:m);
- }else{
-  modules.push(data);
- }
- saveModules();
- resetForm();
- renderDeveloper();
- alert("Module saved!");
-}
-
-function editModule(id){
- const game=modules.find(m=>m.id===id);
- if(!game)return;
- editingId=id;
- $("formTitle").textContent="Edit module";
- $("gameName").value=game.name;
- $("gameDescription").value=game.description;
- $("gameURL").value=game.url||"";
- $("gameHTML").value=game.html||"";
- window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function resetForm(){
- editingId=null;
- $("formTitle").textContent="Add a new module";
- $("gameName").value="";
- $("gameDescription").value="";
- $("gameURL").value="";
- $("gameHTML").value="";
-}
-
-function playGame(id){
- const game=modules.find(m=>m.id===id);
- if(!game)return;
+function playGame(game){
+ currentGame=game;
  $("playingTitle").textContent=game.name;
+
  const frame=$("gameFrame");
- if(game.html){
-  frame.removeAttribute("src");
-  frame.srcdoc=game.html;
- }else{
-  frame.removeAttribute("srcdoc");
-  frame.src=game.url;
- }
+ frame.src=game.url;
+
  showPage("player");
+}
+
+function closeGame(){
+ $("gameFrame").src="about:blank";
+ currentGame=null;
+ showPage("arcade");
 }
 
 function fullscreenGame(){
  const frame=$("gameFrame");
- if(frame.requestFullscreen)frame.requestFullscreen();
+ if(frame.requestFullscreen){
+  frame.requestFullscreen().catch(()=>{});
+ }
 }
 
-loadModules();
-renderGames();
+function openGitHub(){
+ window.open(
+  `https://github.com/${USERNAME}/${REPOSITORY}/tree/main/${GAME_FOLDER}`,
+  "_blank"
+ );
+}
+
 updateDisplay();
 </script>
 </body>
