@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Click the Circle</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101426;color:white;
+ font-family:Arial,sans-serif;text-align:center;
+}
+header{padding:25px}
+h1{font-size:35px;margin-bottom:8px}
+p{color:#aab3ca}
+.stats{
+ display:flex;justify-content:center;gap:35px;
+ margin:20px;flex-wrap:wrap
+}
+.stat{
+ background:#202944;padding:15px 25px;
+ border-radius:12px;min-width:110px
+}
+.stat strong{display:block;font-size:27px;color:#a58bff}
+#arena{
+ position:relative;margin:20px auto;
+ width:min(90vw,700px);height:420px;
+ background:#19213a;border:2px solid #344365;
+ border-radius:18px;overflow:hidden;
+}
+#target{
+ position:absolute;width:55px;height:55px;
+ border:0;border-radius:50%;
+ background:#a58bff;cursor:pointer;
+ box-shadow:0 0 25px #a58bff88;
+ display:none;
+ transition:transform .08s;
+}
+#target:active{transform:scale(.8)}
+button{
+ background:#795cff;color:white;border:0;
+ padding:14px 25px;border-radius:10px;
+ font-size:16px;font-weight:bold;cursor:pointer
+}
+button:hover{filter:brightness(1.2)}
+#message{font-size:19px;margin:20px}
+</style>
+</head>
+<body>
+
+<header>
+ <h1>CLICK THE CIRCLE</h1>
+ <p>How many targets can you hit in 20 seconds?</p>
+</header>
+
+<div class="stats">
+ <div class="stat">SCORE<strong id="score">0</strong></div>
+ <div class="stat">TIME<strong id="time">20</strong></div>
+ <div class="stat">BEST<strong id="best">0</strong></div>
+</div>
+
+<div id="arena">
+ <button id="target" aria-label="Click target"></button>
+</div>
+
+<div id="message">Ready? Let's play!</div>
+<button id="start">START GAME</button>
+
+<script>
+const arena=document.getElementById("arena");
+const target=document.getElementById("target");
+const scoreText=document.getElementById("score");
+const timeText=document.getElementById("time");
+const bestText=document.getElementById("best");
+const message=document.getElementById("message");
+const startButton=document.getElementById("start");
+
+let score=0;
+let time=20;
+let running=false;
+let timer=null;
+let best=Number(localStorage.getItem("circleBest")||0);
+
+bestText.textContent=best;
+
+function moveTarget(){
+ const maxX=arena.clientWidth-target.offsetWidth;
+ const maxY=arena.clientHeight-target.offsetHeight;
+
+ target.style.left=Math.random()*maxX+"px";
+ target.style.top=Math.random()*maxY+"px";
+}
+
+function startGame(){
+ if(running)return;
+
+ score=0;
+ time=20;
+ running=true;
+
+ scoreText.textContent=score;
+ timeText.textContent=time;
+ message.textContent="GO! GO! GO!";
+ startButton.disabled=true;
+ startButton.textContent="PLAYING...";
+ target.style.display="block";
+
+ moveTarget();
+
+ timer=setInterval(()=>{
+  time--;
+  timeText.textContent=time;
+
+  if(time<=0)endGame();
+ },1000);
+}
+
+function endGame(){
+ running=false;
+ clearInterval(timer);
+ target.style.display="none";
+ startButton.disabled=false;
+ startButton.textContent="PLAY AGAIN";
+
+ if(score>best){
+  best=score;
+  localStorage.setItem("circleBest",best);
+  bestText.textContent=best;
+  message.textContent="NEW HIGH SCORE! You got "+score+"!";
+ }else{
+  message.textContent="TIME'S UP! You scored "+score+" points!";
+ }
+}
+
+target.addEventListener("click",()=>{
+ if(!running)return;
+
+ score++;
+ scoreText.textContent=score;
+ moveTarget();
+});
+
+startButton.addEventListener("click",startGame);
+
+window.addEventListener("resize",()=>{
+ if(running)moveTarget();
+});
+</script>
+</body>
+</html>
