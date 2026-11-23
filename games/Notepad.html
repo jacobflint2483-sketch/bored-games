@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notepad</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #090b12;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 15px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  h2 { font-size: 18px; color: #7557ff; }
+  span { font-size: 12px; color: #9aa5bc; }
+  textarea {
+    flex: 1;
+    width: 100%;
+    background: #151a27;
+    color: #ffffff;
+    border: 1px solid #30364a;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+  }
+  textarea:focus { border-color: #927dff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h2>📝 Permanent Notepad</h2>
+  <span id="status">Auto-saved</span>
+</header>
+
+<textarea id="pad" placeholder="Type anything here... it stays permanently on this device."></textarea>
+
+<script>
+  const pad = document.getElementById("pad");
+  const status = document.getElementById("status");
+
+  // Load existing text when opened
+  pad.value = localStorage.getItem("my_github_notes") || "";
+
+  // Save on every single keystroke
+  pad.addEventListener("input", () => {
+    localStorage.setItem("my_github_notes", pad.value);
+    status.textContent = "Saving...";
+    setTimeout(() => { status.textContent = "Auto-saved"; }, 300);
+  });
+</script>
+
+</body>
+</html>
