@@ -7,20 +7,55 @@
 <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='85'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E">
 <style>
 :root{
- --bg:#090b12;
- --panel:#151a27;
- --card:#161c2b;
- --accent:#7557ff;
- --accent2:#927dff;
- --text:#ffffff;
- --muted:#9aa5bc;
- --border:#30364a;
+ --bg:#0c111b;
+ --panel:#151e2d;
+ --card:#192537;
+ --accent:#7c6cff;
+ --accent2:#a99eff;
+ --text:#f6f7ff;
+ --muted:#b1bdd0;
+ --border:#303d52;
 }
 *{box-sizing:border-box}
 body{
- margin:0;background:var(--bg);color:var(--text);
+ margin:0;background:radial-gradient(ellipse at 50% -20%,#202449 0,transparent 52%),var(--bg);color:var(--text);
  font-family:Arial,sans-serif;min-height:100vh;
 }
+.pageNav{
+ position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;
+ gap:14px;flex-wrap:wrap;padding:12px max(20px,calc((100vw - 1160px)/2));
+ background:#0c111beF;backdrop-filter:blur(14px);border-bottom:1px solid var(--border)
+}
+.navBrand{font-size:16px;font-weight:900;letter-spacing:1.5px;color:white;text-decoration:none}
+.navLinks{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.navLinks button{padding:9px 13px;border-radius:999px;background:#202a3c;color:#dfe5f3;font-size:13px}
+.navLinks button.current{background:var(--accent);color:white}
+.welcome{width:min(1120px,100%);margin:0 auto;padding:38px 22px 25px}
+.welcome h1{font-size:clamp(30px,5vw,48px);line-height:1.06;margin:12px 0}
+.eyebrow{color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.welcome p{color:var(--muted);line-height:1.65;max-width:670px}
+.homeLayout{max-width:1120px;margin:0 auto;padding:0 22px 45px;display:grid;grid-template-columns:minmax(280px,390px) 1fr;gap:28px;align-items:center}
+.homeAside{padding:25px;border:1px solid var(--border);border-radius:20px;background:linear-gradient(145deg,#1b2540,#131a27)}
+.homeAside h2{margin:8px 0}.homeAside p{color:var(--muted);line-height:1.6}
+.shortcutGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+.shortcut{padding:14px;background:#101725;border:1px solid var(--border);border-radius:13px;cursor:pointer}
+.shortcut b{display:block;margin-bottom:5px}.shortcut span{font-size:12px;color:var(--muted)}
+.sectionPage{max-width:1120px;margin:auto;padding:38px 22px 55px}
+.sectionIntro{margin-bottom:25px}.sectionIntro h1{font-size:clamp(30px,4vw,42px);margin:8px 0}
+.bookGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:16px}
+.bookCard,.toolCard{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:20px}
+.bookCover{height:112px;border-radius:12px;display:grid;place-items:center;font-size:42px;margin-bottom:15px;background:linear-gradient(135deg,#50479c,#253d52)}
+.bookCard:nth-child(3n+2) .bookCover{background:linear-gradient(135deg,#a35c4c,#59344b)}
+.bookCard:nth-child(3n) .bookCover{background:linear-gradient(135deg,#2b855f,#23494b)}
+.bookCard h2{font-size:18px;margin:0 0 5px}.bookBy{color:var(--accent2);font-size:13px}.bookCard p{color:var(--muted);font-size:14px;line-height:1.55}
+.bookTag{display:inline-block;margin-top:5px;color:#d9d2ff;font-size:11px;background:#343050;border-radius:99px;padding:6px 9px}
+.toolsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.toolCard h2{margin:0 0 8px}.toolCard p{color:var(--muted);font-size:14px;line-height:1.5}
+.toolFields{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:15px}.toolFields input{width:125px}
+.toolResult{min-height:28px;margin:14px 0 0!important;color:#a5efc3!important;font-weight:bold}
+.toolCard button{margin-top:5px}
+@media(max-width:720px){.homeLayout{grid-template-columns:1fr}.welcome{padding-top:28px}.pageNav{padding:11px 14px}.navLinks{gap:5px}.navLinks button{padding:8px 10px}}
+
 button,input,select{font:inherit}
 button{
  border:0;border-radius:10px;padding:12px 17px;
@@ -153,6 +188,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 @media(max-width:500px){
  .hero h1{font-size:29px}
  .calculator{padding:17px}
+ .shortcutGrid{grid-template-columns:1fr}
  .keys{gap:7px}
  .keys button{min-height:55px}
  .settingRow{align-items:flex-start;flex-direction:column}
@@ -162,9 +198,22 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 </head>
 <body>
 
-<!-- CALCULATOR -->
+<!-- HOME: the calculator remains the way into the games -->
 <section id="home" class="page active">
- <div class="center">
+ <nav class="pageNav" aria-label="Main navigation">
+  <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ MATHS & MORE</a>
+  <div class="navLinks">
+   <button class="current" onclick="showPage('home')">⌂ Home</button>
+   <button onclick="showPage('maths')">∑ Maths tools</button>
+   <button onclick="showPage('books')">▤ Book picks</button>
+  </div>
+ </nav>
+ <div class="welcome">
+  <div class="eyebrow">Your little corner of the internet</div>
+  <h1>Play with numbers.<br>Find your next favourite book.</h1>
+  <p>A handy calculator and a few fun maths tools to explore. Find a book that sparks your curiosity or try a quick challenge.</p>
+ </div>
+ <div class="homeLayout">
   <div class="calculator">
    <div id="display" class="display">0</div>
    <div class="keys">
@@ -189,12 +238,72 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
     <button class="special" onclick="append(')')">)</button>
     <button class="equals" onclick="calculate()">=</button>
    </div>
+   <p class="note" style="text-align:center;margin-bottom:0">A handy calculator for quick sums.</p>
   </div>
+  <aside class="homeAside">
+   <div class="eyebrow">Pick a path</div>
+   <h2>What are you in the mood for?</h2>
+   <p>Try a quick calculation, explore a maths challenge, or find a book that makes you curious.</p>
+   <div class="shortcutGrid">
+    <button class="shortcut" onclick="showPage('maths')"><b>∑ Maths tools</b><span>Percentages and times tables</span></button>
+    <button class="shortcut" onclick="showPage('books')"><b>📚 Book picks</b><span>Good reads for curious minds</span></button>
+   </div>
+  </aside>
  </div>
+</section>
+
+<!-- MATHS TOOLS -->
+<section id="maths" class="page">
+ <nav class="pageNav" aria-label="Main navigation">
+  <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ MATHS & MORE</a>
+  <div class="navLinks">
+   <button onclick="showPage('home')">⌂ Home</button><button class="current" onclick="showPage('maths')">∑ Maths tools</button>
+   <button onclick="showPage('books')">▤ Book picks</button>
+  </div>
+ </nav>
+ <main class="sectionPage">
+  <div class="sectionIntro"><div class="eyebrow">Useful little helpers</div><h1>Maths tools</h1><p class="muted">Try a quick percentage or build a times table. The calculator is always one tap away.</p></div>
+  <div class="toolsGrid">
+   <article class="toolCard"><h2>％ Percentage finder</h2><p>Find a percentage of a number. For example, 20% of 50 is 10.</p>
+    <div class="toolFields"><input id="percentValue" type="number" placeholder="Percentage" aria-label="Percentage"><span>% of</span><input id="percentBase" type="number" placeholder="Number" aria-label="Number"><button onclick="calculatePercent()">Work it out</button></div>
+    <p id="percentResult" class="toolResult" aria-live="polite"></p>
+   </article>
+   <article class="toolCard"><h2>✕ Times table</h2><p>Choose a number to see its times table from 1 to 12.</p>
+    <div class="toolFields"><input id="tableNumber" type="number" min="-99" max="999" value="7" aria-label="Times table number"><button onclick="makeTimesTable()">Show table</button></div>
+    <p id="tableResult" class="toolResult" aria-live="polite"></p>
+   </article>
+  </div>
+ </main>
+</section>
+
+<!-- BOOK RECOMMENDATIONS -->
+<section id="books" class="page">
+ <nav class="pageNav" aria-label="Main navigation">
+  <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ MATHS & MORE</a>
+  <div class="navLinks">
+   <button onclick="showPage('home')">⌂ Home</button><button onclick="showPage('maths')">∑ Maths tools</button>
+   <button class="current" onclick="showPage('books')">▤ Book picks</button>
+  </div>
+ </nav>
+ <main class="sectionPage">
+  <div class="sectionIntro"><div class="eyebrow">A few pages worth turning</div><h1>Books for curious minds</h1><p class="muted">A mix of funny, surprising, and hands-on books about maths, science, and big ideas.</p></div>
+  <div class="bookGrid">
+   <article class="bookCard"><div class="bookCover" aria-hidden="true">🔢</div><h2>The Number Devil</h2><div class="bookBy">Hans Magnus Enzensberger</div><p>Robert meets a mischievous little devil who makes number patterns and mathematical ideas feel like a strange, funny adventure.</p><span class="bookTag">For curious readers · 10+</span></article>
+   <article class="bookCard"><div class="bookCover" aria-hidden="true">🌌</div><h2>Can You Count to a Googol?</h2><div class="bookBy">Robert E. Wells</div><p>A bright, picture-filled introduction to enormous numbers, from a million all the way to a googol.</p><span class="bookTag">Great for younger readers · 6+</span></article>
+   <article class="bookCard"><div class="bookCover" aria-hidden="true">🧪</div><h2>The Manga Guide to Statistics</h2><div class="bookBy">Shin Takahashi</div><p>Learn how averages, probability, and data work through a manga story and clear examples.</p><span class="bookTag">Comics + maths · 12+</span></article>
+   <article class="bookCard"><div class="bookCover" aria-hidden="true">🚲</div><h2>The Boy Who Harnessed the Wind</h2><div class="bookBy">William Kamkwamba and Bryan Mealer</div><p>A determined young inventor uses curiosity and science to build a windmill and help his community.</p><span class="bookTag">Real-life inspiration · 10+</span></article>
+   <article class="bookCard"><div class="bookCover" aria-hidden="true">📐</div><h2>How to Be Good at Maths</h2><div class="bookBy">DK</div><p>A visual guide to the building blocks of maths, with diagrams and examples that make tricky topics easier to explore.</p><span class="bookTag">Visual guide · 8+</span></article>
+   <article class="bookCard"><div class="bookCover" aria-hidden="true">✨</div><h2>The Joy of x</h2><div class="bookBy">Steven Strogatz</div><p>A warm, story-filled tour through the ideas behind algebra, calculus, and the maths hiding in everyday life.</p><span class="bookTag">For maths fans · Teen +</span></article>
+  </div>
+ </main>
 </section>
 
 <!-- ARCADE -->
 <section id="arcade" class="page">
+ <nav class="pageNav" aria-label="Main navigation">
+  <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ MATHS & MORE</a>
+  <div class="navLinks"><button onclick="showPage('home')">⌂ Calculator</button><button onclick="showPage('maths')">∑ Maths tools</button><button onclick="showPage('books')">▤ Book picks</button></div>
+ </nav>
  <header>
   <div class="brand">
    <img id="brandLogo" alt="" style="display:none">
@@ -384,6 +493,20 @@ document.addEventListener("keydown",event=>{
  else if(event.key==="Escape")clearCalc();
 });
 
+function calculatePercent(){
+ const percent=Number($("percentValue").value),base=Number($("percentBase").value);
+ const result=$("percentResult");
+ if($("percentValue").value===""||$("percentBase").value===""||!Number.isFinite(percent)||!Number.isFinite(base)){
+  result.textContent="Enter both numbers to see the answer.";return;
+ }
+ result.textContent=`${percent}% of ${base} = ${Number((percent/100*base).toFixed(8))}`;
+}
+function makeTimesTable(){
+ const field=$("tableNumber"),number=Number(field.value),result=$("tableResult");
+ if(field.value===""||!Number.isFinite(number)){result.textContent="Enter a number first.";return;}
+ result.textContent=Array.from({length:12},(_,i)=>`${number} × ${i+1} = ${number*(i+1)}`).join("   ·   ");
+}
+
 // SETTINGS
 function readSettings(){
  try{
@@ -432,7 +555,7 @@ function applySettings(){
   $("arcadeHeaderButtons").appendChild(btn);
  }
 }
-const defaultFavicon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='85'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E";
+const defaultFavicon="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3Ctext y='.9em' font-size='85'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E";
 
 function loadSettingsIntoForm(){
  const s=readSettings();
