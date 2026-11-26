@@ -394,7 +394,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 
   <div class="settingCard">
    <h3>Quick calculator</h3>
-   <p>Enable a button in the arcade header that switches straight to your calculator. Entering 2483 returns to the arcade.</p>
+   <p>Enable a button in the arcade header that switches straight to your calculator. Entering 2013 returns to the arcade.</p>
    <div class="settingRow">
     <label for="quickCalcToggle">Show calculator button</label>
     <span id="quickCalcToggle" class="toggle on" role="switch" aria-checked="true" tabindex="0" onclick="toggleQuickCalc()"></span>
@@ -466,7 +466,7 @@ function updateDisplay(){ $("display").textContent=expression||"0"; }
 function append(value){
  if(expression.length>=40)return;
  expression+=value;updateDisplay();
- if(expression==="2483"){
+ if(expression==="2013"){
   expression="";updateDisplay();
   loadGames();showPage("arcade");
  }
