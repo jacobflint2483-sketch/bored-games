@@ -79,7 +79,13 @@ input:focus,select:focus{border-color:var(--accent2)}
 .calculator{
  width:340px;max-width:100%;padding:23px;
  background:var(--panel);border:1px solid var(--border);
- border-radius:22px;box-shadow:0 20px 70px #0009
+ border-radius:22px;box-shadow:0 20px 70px #0009;
+ position:relative;
+}
+.calc-badge{
+ font-size:11px;text-transform:uppercase;letter-spacing:1px;
+ color:var(--accent2);margin-bottom:8px;font-weight:bold;
+ min-height:15px;
 }
 .display{
  background:#090d16;border-radius:12px;
@@ -92,6 +98,32 @@ input:focus,select:focus{border-color:var(--accent2)}
 .keys .operator{background:var(--accent)}
 .keys .special{background:#414a60}
 .keys .equals{background:#13a87c}
+
+/* INTERMEDIATE GATE SCREENS */
+.gateContainer{
+ max-width:800px;margin:50px auto;padding:32px 24px;
+ background:var(--panel);border:1px solid var(--border);
+ border-radius:24px;box-shadow:0 25px 70px #0009;
+ text-align:center;
+}
+.gateTag{
+ display:inline-block;padding:5px 12px;border-radius:99px;
+ background:#263249;color:var(--accent2);font-size:12px;
+ font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:15px;
+}
+.gateContainer h1{font-size:32px;margin:10px 0 15px}
+.gateContainer p{color:var(--muted);max-width:550px;margin:0 auto 25px;line-height:1.6}
+.gateCardGrid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:16px;margin:25px 0;text-align:left;
+}
+.gateCard{
+ background:var(--card);border:1px solid var(--border);
+ border-radius:16px;padding:20px;
+}
+.gateCard h3{margin:0 0 8px;font-size:17px;color:#fff}
+.gateCard p{font-size:13px;margin:0;color:var(--muted)}
+.gateActions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px}
 
 /* ARCADE */
 header{
@@ -198,7 +230,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 </head>
 <body>
 
-<!-- HOME: the calculator remains the way into the games -->
+<!-- HOME -->
 <section id="home" class="page active">
  <nav class="pageNav" aria-label="Main navigation">
   <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ MATHS & MORE</a>
@@ -215,6 +247,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
  </div>
  <div class="homeLayout">
   <div class="calculator">
+   <div id="calcBadge" class="calc-badge"></div>
    <div id="display" class="display">0</div>
    <div class="keys">
     <button class="special" onclick="clearCalc()">AC</button>
@@ -238,7 +271,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
     <button class="special" onclick="append(')')">)</button>
     <button class="equals" onclick="calculate()">=</button>
    </div>
-   <p class="note" style="text-align:center;margin-bottom:0">A handy calculator for quick sums.</p>
+   <p id="calcNote" class="note" style="text-align:center;margin-bottom:0">A handy calculator for quick sums.</p>
   </div>
   <aside class="homeAside">
    <div class="eyebrow">Pick a path</div>
@@ -249,6 +282,60 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
     <button class="shortcut" onclick="showPage('books')"><b>📚 Book picks</b><span>Good reads for curious minds</span></button>
    </div>
   </aside>
+ </div>
+</section>
+
+<!-- GATE 1 MENU SCREEN (Unlocked by 2483) -->
+<section id="gate-stage2" class="page">
+ <nav class="pageNav" aria-label="Main navigation">
+  <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ VAULT ALPHA</a>
+  <div class="navLinks"><button onclick="exitToCalc()">⌂ Calculator</button></div>
+ </nav>
+ <div class="gateContainer">
+  <span class="gateTag">Checkpoint 1 Passed</span>
+  <h1>Vault Alpha: Level 2 Cleared</h1>
+  <p>Password <b>2483</b> recognized. You have passed through checkpoint 1 and unlocked the intermediate security tier.</p>
+  <div class="gateCardGrid">
+   <div class="gateCard">
+    <h3>Next Security Level</h3>
+    <p>Return to the calculator and enter the final access key <b>3842</b> to enter the master terminal.</p>
+   </div>
+   <div class="gateCard">
+    <h3>Session Status</h3>
+    <p>Security Clearance: <b style="color:#78dc9b">Tier 2 Active</b><br>Encryption: 256-bit Dual Lock</p>
+   </div>
+  </div>
+  <div class="gateActions">
+   <button onclick="promptStage3()">Enter Stage 3 Key →</button>
+   <button class="secondary" onclick="exitToCalc()">Return to Calculator</button>
+  </div>
+ </div>
+</section>
+
+<!-- GATE 2 MENU SCREEN (Unlocked by 3842) -->
+<section id="gate-stage3" class="page">
+ <nav class="pageNav" aria-label="Main navigation">
+  <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ CENTRAL TERMINAL</a>
+  <div class="navLinks"><button onclick="exitToCalc()">⌂ Calculator</button></div>
+ </nav>
+ <div class="gateContainer">
+  <span class="gateTag" style="color:#83e5a3">Access Granted</span>
+  <h1>Central Terminal: All Gates Unlocked</h1>
+  <p>Password <b>3842</b> accepted. All verification checkpoints have been cleared. You are ready to launch the full game library.</p>
+  <div class="gateCardGrid">
+   <div class="gateCard">
+    <h3>Arcade Ready</h3>
+    <p>Proceed straight into your arcade games repository.</p>
+   </div>
+   <div class="gateCard">
+    <h3>Direct Access</h3>
+    <p>Your authentication tokens are validated for this browser session.</p>
+   </div>
+  </div>
+  <div class="gateActions">
+   <button onclick="enterArcade()">Launch Arcade 🚀</button>
+   <button class="secondary" onclick="exitToCalc()">Lock & Return</button>
+  </div>
  </div>
 </section>
 
@@ -302,7 +389,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 <section id="arcade" class="page">
  <nav class="pageNav" aria-label="Main navigation">
   <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ MATHS & MORE</a>
-  <div class="navLinks"><button onclick="showPage('home')">⌂ Calculator</button><button onclick="showPage('maths')">∑ Maths tools</button><button onclick="showPage('books')">▤ Book picks</button></div>
+  <div class="navLinks"><button onclick="exitToCalc()">⌂ Calculator</button><button onclick="showPage('maths')">∑ Maths tools</button><button onclick="showPage('books')">▤ Book picks</button></div>
  </nav>
  <header>
   <div class="brand">
@@ -311,7 +398,6 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
   </div>
   <div class="headerButtons" id="arcadeHeaderButtons">
    <button class="secondary" onclick="showPage('settings')">⚙ Settings</button>
-   <!-- Quick Calc button dynamically injected here if enabled -->
   </div>
  </header>
  <main class="container">
@@ -394,7 +480,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
 
   <div class="settingCard">
    <h3>Quick calculator</h3>
-   <p>Enable a button in the arcade header that switches straight to your calculator. Entering 2013 returns to the arcade.</p>
+   <p>Enable a button in the arcade header that switches straight to your calculator.</p>
    <div class="settingRow">
     <label for="quickCalcToggle">Show calculator button</label>
     <span id="quickCalcToggle" class="toggle on" role="switch" aria-checked="true" tabindex="0" onclick="toggleQuickCalc()"></span>
@@ -411,7 +497,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
    </div>
    <div class="success" id="saveMessage"></div>
   </div>
-  <p class="note">Note: These settings are stored in this browser, not in GitHub. Other devices and browsers will have their own settings. The browser address/URL itself cannot be changed by a website.</p>
+  <p class="note">Note: These settings are stored in this browser, not in GitHub. Other devices and browsers will have their own settings.</p>
  </main>
 </section>
 
@@ -439,6 +525,9 @@ let currentGame=null;
 let customLogo="";
 let quickCalc=true;
 
+// Multi-stage gate status: 1 = initial (needs 2013), 2 = stage 2 (needs 2483), 3 = stage 3 (needs 3842)
+let gateStage = 1;
+
 const defaults={
  siteName:"Bored Games",
  tabTitle:"Calculator",
@@ -462,15 +551,60 @@ function showPage(id){
  if(id==="settings")loadSettingsIntoForm();
 }
 
-function updateDisplay(){ $("display").textContent=expression||"0"; }
+function updateDisplay(){ 
+ $("display").textContent=expression||"0"; 
+ const badge = $("calcBadge");
+ if(gateStage === 2) badge.textContent = "Passcode 2 Required";
+ else if(gateStage === 3) badge.textContent = "Passcode 3 Required";
+ else badge.textContent = "";
+}
+
 function append(value){
  if(expression.length>=40)return;
- expression+=value;updateDisplay();
- if(expression==="2013"){
-  expression="";updateDisplay();
-  loadGames();showPage("arcade");
+ expression+=value;
+ updateDisplay();
+ checkCodes();
+}
+
+function checkCodes(){
+ if(gateStage === 1 && expression === "2013"){
+  gateStage = 2;
+  expression = "";
+  updateDisplay();
+  $("calcNote").textContent = "Step 1 cleared. Enter second passcode.";
+ } else if(gateStage === 2 && expression === "2483"){
+  gateStage = 3;
+  expression = "";
+  updateDisplay();
+  showPage("gate-stage2");
+ } else if(gateStage === 3 && expression === "3842"){
+  expression = "";
+  updateDisplay();
+  showPage("gate-stage3");
  }
 }
+
+function promptStage3(){
+ gateStage = 3;
+ expression = "";
+ updateDisplay();
+ showPage("home");
+ $("calcNote").textContent = "Stage 2 cleared. Enter final passcode.";
+}
+
+function enterArcade(){
+ loadGames();
+ showPage("arcade");
+}
+
+function exitToCalc(){
+ gateStage = 1;
+ expression = "";
+ updateDisplay();
+ $("calcNote").textContent = "A handy calculator for quick sums.";
+ showPage("home");
+}
+
 function clearCalc(){expression="";updateDisplay()}
 function backspace(){expression=expression.slice(0,-1);updateDisplay()}
 function calculate(){
@@ -479,7 +613,8 @@ function calculate(){
   if(!/^[0-9+\-*/(). ]+$/.test(expression))throw Error();
   const result=Function('"use strict";return ('+expression+')')();
   if(!Number.isFinite(result))throw Error();
-  expression=String(Number(result.toFixed(10)));updateDisplay();
+  expression=String(Number(result.toFixed(10)));
+  updateDisplay();
  }catch{
   $("display").textContent="Error";expression="";
  }
@@ -551,7 +686,7 @@ function applySettings(){
   btn.id="quickCalcButton";
   btn.className="secondary";
   btn.textContent="Calculator";
-  btn.onclick=()=>{clearCalc();showPage("home")};
+  btn.onclick=()=>exitToCalc();
   $("arcadeHeaderButtons").appendChild(btn);
  }
 }
