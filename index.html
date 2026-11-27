@@ -285,7 +285,7 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
  </div>
 </section>
 
-<!-- GATE 1 MENU SCREEN (Unlocked by 2483) -->
+<!-- GATE STAGE 2 SCREEN -->
 <section id="gate-stage2" class="page">
  <nav class="pageNav" aria-label="Main navigation">
   <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ VAULT ALPHA</a>
@@ -294,34 +294,34 @@ footer{text-align:center;color:#68738b;padding:35px;font-size:12px}
  <div class="gateContainer">
   <span class="gateTag">Checkpoint 1 Passed</span>
   <h1>Vault Alpha: Level 2 Cleared</h1>
-  <p>Password <b>2483</b> recognized. You have passed through checkpoint 1 and unlocked the intermediate security tier.</p>
+  <p>Password <b>2483</b> recognized. You have unlocked checkpoint 2.</p>
   <div class="gateCardGrid">
    <div class="gateCard">
     <h3>Next Security Level</h3>
-    <p>Return to the calculator and enter the final access key <b>hiddenb> to enter the master terminal.</p>
+    <p>Return to the calculator and enter step 3 access key <b>3842</b>.</p>
    </div>
    <div class="gateCard">
     <h3>Session Status</h3>
-    <p>Security Clearance: <b style="color:#78dc9b">Tier 2 Active</b><br>Encryption: 256-bit Dual Lock</p>
+    <p>Security Clearance: <b style="color:#78dc9b">Tier 2 Active</b><br>Progress: Step 2 of 8</p>
    </div>
   </div>
   <div class="gateActions">
-   <button onclick="promptStage3()">Enter Stage 3 Key →</button>
+   <button onclick="continueSteps(3, 'Stage 2 cleared. Enter step 3 passcode.')">Enter Step 3 Key →</button>
    <button class="secondary" onclick="exitToCalc()">Return to Calculator</button>
   </div>
  </div>
 </section>
 
-<!-- GATE 2 MENU SCREEN (Unlocked by 3842) -->
-<section id="gate-stage3" class="page">
+<!-- GATE FINAL SCREEN (Unlocked after step 8) -->
+<section id="gate-stage8" class="page">
  <nav class="pageNav" aria-label="Main navigation">
   <a class="navBrand" href="#home" onclick="showPage('home');return false">✦ CENTRAL TERMINAL</a>
   <div class="navLinks"><button onclick="exitToCalc()">⌂ Calculator</button></div>
  </nav>
  <div class="gateContainer">
   <span class="gateTag" style="color:#83e5a3">Access Granted</span>
-  <h1>Central Terminal: All Gates Unlocked</h1>
-  <p>Password <b>3842</b> accepted. All verification checkpoints have been cleared. You are ready to launch the full game library.</p>
+  <h1>Central Terminal: All 8 Gates Cleared</h1>
+  <p>Final passcode <b>5</b> verified. All 8 verification checkpoints have been solved. You are ready to launch the full arcade library.</p>
   <div class="gateCardGrid">
    <div class="gateCard">
     <h3>Arcade Ready</h3>
@@ -525,7 +525,19 @@ let currentGame=null;
 let customLogo="";
 let quickCalc=true;
 
-// Multi-stage gate status: 1 = initial (needs 2013), 2 = stage 2 (needs 2483), 3 = stage 3 (needs 3842)
+// 8-Step Passcodes definition
+const PASSCODES = [
+  "2013", // Step 1
+  "2483", // Step 2
+  "3842", // Step 3
+  "1",    // Step 4
+  "2",    // Step 5
+  "3",    // Step 6
+  "4",    // Step 7
+  "5"     // Step 8
+];
+
+// Current gate stage: 1 to 8
 let gateStage = 1;
 
 const defaults={
@@ -554,9 +566,11 @@ function showPage(id){
 function updateDisplay(){ 
  $("display").textContent=expression||"0"; 
  const badge = $("calcBadge");
- if(gateStage === 2) badge.textContent = "Passcode 2 Required";
- else if(gateStage === 3) badge.textContent = "Passcode 3 Required";
- else badge.textContent = "";
+ if(gateStage > 1) {
+   badge.textContent = `Passcode ${gateStage} of 8 Required`;
+ } else {
+   badge.textContent = "";
+ }
 }
 
 function append(value){
@@ -567,29 +581,34 @@ function append(value){
 }
 
 function checkCodes(){
- if(gateStage === 1 && expression === "2013"){
-  gateStage = 2;
+ const currentTargetCode = PASSCODES[gateStage - 1];
+ if(expression === currentTargetCode){
   expression = "";
-  updateDisplay();
-  $("calcNote").textContent = "Step 1 cleared. Enter second passcode.";
- } else if(gateStage === 2 && expression === "2483"){
-  gateStage = 3;
-  expression = "";
-  updateDisplay();
-  showPage("gate-stage2");
- } else if(gateStage === 3 && expression === "3842"){
-  expression = "";
-  updateDisplay();
-  showPage("gate-stage3");
+  if(gateStage === 1){
+   gateStage = 2;
+   updateDisplay();
+   $("calcNote").textContent = "Step 1 cleared. Enter passcode 2.";
+  } else if(gateStage === 2){
+   gateStage = 3;
+   updateDisplay();
+   showPage("gate-stage2");
+  } else if(gateStage >= 3 && gateStage <= 7){
+   gateStage++;
+   updateDisplay();
+   $("calcNote").textContent = `Step ${gateStage - 1} cleared. Enter step ${gateStage} passcode.`;
+  } else if(gateStage === 8){
+   updateDisplay();
+   showPage("gate-stage8");
+  }
  }
 }
 
-function promptStage3(){
- gateStage = 3;
+function continueSteps(stage, noteText){
+ gateStage = stage;
  expression = "";
  updateDisplay();
  showPage("home");
- $("calcNote").textContent = "Stage 2 cleared. Enter final passcode.";
+ $("calcNote").textContent = noteText;
 }
 
 function enterArcade(){
